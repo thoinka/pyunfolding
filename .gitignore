@@ -4,6 +4,8 @@ __pycache__
 *.eggs
 *.egg-info
 
+*.pyc
+
 .DS_Store
 
 .ipynb_checkpoints
