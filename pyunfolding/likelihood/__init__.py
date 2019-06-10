@@ -1,9 +1,7 @@
-from .likelihood import Poisson, LeastSquares, OnlyPositive,\
-    TikhonovRegularization, Likelihood, TikhonovRegularization2
+from . import solution
+from . import llh
+from .llhunfolding import LLHUnfolding
 
-__all__ = ("Likelihood",
-	       "Poisson",
-           "LeastSquares"
-           "OnlyPositive",
-           "TikhonovRegularization",
-           "TikhonovRegularization2")
+__all__ = ("llh",
+	       "solution",
+           "LLHUnfolding")

@@ -1,13 +1,14 @@
 from . import binning
 from . import model
 from . import likelihood
-from . import pipeline
 from . import plot
-from . import solver
+from .likelihood import LLHUnfolding
+from .bayesian import BayesianUnfolding
+
 
 __all__ = ["binning",
            "model",
            "likelihood",
-           "pipeline",
            "plot",
-           "solver"]
+           "LLHUnfolding",
+           "BayesianUnfolding"]
