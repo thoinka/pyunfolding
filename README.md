@@ -13,7 +13,7 @@ pyUnfolding offers multiple algorithms to unfold a given sample on the basis of 
 ## Examples
 Let's take a simple example: We have two variables which are correlated.
 
-```
+```python
 import numpy as np
 
 
@@ -25,21 +25,23 @@ y = sample_linear(-1.0, 100000)
 X = y + np.random.randn(100000) / (2.0 + y) ** 3
 
 y_test = sample_linear(1.0, 10000)
-X_test = y_test + np.random.randn(10000) / (2.0 + y_test) ** 3```
-
+X_test = y_test + np.random.randn(10000) / (2.0 + y_test) ** 3
+```
 Let's unfold `X_test` using a Likelihood approach:
 
-```import pyunfolding as pu
+```python
+import pyunfolding as pu
 
 llhu = pu.LLHUnfolding(binning_X=pu.binning.GridBinning(100),
                        binning_y=pu.binning.GridBinning(20),
                        llh=[pu.likelihood.llh.Poisson(), pu.likelihood.llh.Tikhonov(0.01)])
 llhu.fit(X, y)
-result = llhu.predict(1000 * np.ones(20), X_test, solver_method='minimizer', method='SLSQP', tol=1e-12)```
-
+result = llhu.predict(1000 * np.ones(20), X_test, solver_method='minimizer', method='SLSQP', tol=1e-12)
+```
 Or alternatively, we could use an iterative bayesian approach:
 
-```ibu = pu.BayesianUnfolding(binning_X=pu.binning.GridBinning(100),
+```python
+ibu = pu.BayesianUnfolding(binning_X=pu.binning.GridBinning(100),
                               binning_y=pu.binning.GridBinning(20))
 ibu.fit(X, y)
 result = ibu.predict(X_test, n_iterations=10)
