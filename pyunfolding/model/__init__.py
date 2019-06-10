@@ -1,3 +1,3 @@
-from .model import Model
+from .model import Unfolding
 
-__all__ = ("Model")
+__all__ = ("Unfolding")

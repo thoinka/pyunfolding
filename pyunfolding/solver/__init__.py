@@ -1,3 +1,3 @@
-from .solver import Minimizer, MCMCSolver
+from .solver import Minimizer, MCMCSolver, NewtonMinimizer
 
-__all__ = ("Minimizer", "MCMCSolver")
+__all__ = ("Minimizer", "MCMCSolver", "NewtonMinimizer")

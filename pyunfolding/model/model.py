@@ -1,6 +1,6 @@
 import numpy as np
 
-class Model(object):
+class Unfolding(object):
     """Linear Model :math:`g = A\cdot f + b`.
 
     Attributes
@@ -27,14 +27,17 @@ class Model(object):
         x_class = self.binning_X.digitize(X)
         bins = [np.arange(self.binning_X.n_bins + 1) - 0.5,
                 np.arange(self.binning_y.n_bins + 1) - 0.5, ]
-        H, _, _ = np.histogram2d(x_class, y_class, bins)
+        H, _, _ = np.histogram2d(x_class,
+                                 np.tile(y_class, self.binning_X.rep),
+                                 bins)
+        #H /= float(self.binning_X.rep)
         self.A = (H + 1e-8) / np.sum(H + 1e-8, axis=0)
         self.fitted = True
 
     def predict(self, f):
         if not self.fitted:
             raise RuntimeError("Model not fitted! Run fit first!")
-        return np.dot(self.A, f)
+        return np.dot(self.A, f) * self.binning_X.rep
 
     def predict_g(self, X):
         if not self.fitted:
@@ -64,4 +67,4 @@ class Model(object):
         x0 = np.dot(Aplus, g)
         if pos:
             x0[x0 < 0.0] = 1e-3
-        return x0
+        return x0 / float(self.binning_X.rep)

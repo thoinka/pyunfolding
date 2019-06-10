@@ -1,4 +1,5 @@
-from .binning import GridBinning, TreeBinning
+from .binning import GridBinning, TreeBinning, EnsembleBinning
 
 __all__ = ("GridBinning",
-           "TreeBinning")
+           "TreeBinning",
+           "EnsembleBinning")

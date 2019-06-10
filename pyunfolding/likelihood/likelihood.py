@@ -1,4 +1,5 @@
 import numpy as np
+from .. import solver
 
 
 class Likelihood:
@@ -36,6 +37,23 @@ class Likelihood:
 
     def __add__(self, llh):
         self.append(llh)
+
+    def __str__(self):
+        return " + ".join([L.__str__() for L in self.llh])
+
+    def solve(self, f0, X, solver_method='mcmc', **kwargs):
+        '''Minimize Likelihood. Supported methods include:
+        * 'mcmc': MCMC minimization
+        * 'minimizer': Using scipy minimizer
+        '''
+        if solver_method == 'mcmc':
+            self.solver = solver.MCMCSolver(self)
+        elif solver_method == 'minimizer':
+            self.solver = solver.Minimizer(self)
+        else:
+            raise NotImplementedError('Method not supported {}'.format(method))
+        return self.solver.solve(f0, X, **kwargs)
+
 
 
 class LikelihoodTerm:
@@ -121,6 +139,9 @@ class LikelihoodTerm:
         """
         raise NotImplementedError("Hessian call needs to be implemented.")
 
+    def __str__(self):
+        return "?"
+
 
 class Poisson(LikelihoodTerm):
     """Poissonian likelihood term as :math:`\sum_i (g np.log(\lmabda(f)) - \lambda(f))`.
@@ -151,14 +172,17 @@ class LeastSquares(LikelihoodTerm):
     def grad(self, model, f, g):
         g_est = model.predict(f)
         A = model.grad(f)
-        part = np.dot((g - g_est).T, A)
-        return -np.dot((g - g_est).T, A)
+        return (-np.dot(g.T, A) - np.dot(A.T, g)\
+               + np.dot(np.dot(A.T, A), f) + np.dot(f.T, np.dot(A.T, A))) * 0.5
 
     def hess(self, model, f, g):
         A = model.grad(f)
         H = model.hess(f)
         g_est = model.predict(f)
-        return -np.dot(A.T, A) - np.dot((g - g_est).T, H)
+        return np.dot(A.T, A) #- np.dot((g - g_est).T, H)
+
+    def __str__(self):
+        return "(g - Af)^T (g - Af) / 2"
 
 
 class OnlyPositive(LikelihoodTerm):
@@ -174,9 +198,9 @@ class OnlyPositive(LikelihoodTerm):
         if self.exclude_edges:
             f = f[1:-1]
         if self.s == 0.0:
-            return (f < 0.0).any() * np.inf
+            return (f < 0.0).any() * np.finfo('float').max
         elif self.s == -0.0:
-            return (f > 0.0).any() * np.inf
+            return (f > 0.0).any() * np.finfo('float').max
         else:
             return np.sum(np.exp(-f / self.s))
 
@@ -198,6 +222,11 @@ class OnlyPositive(LikelihoodTerm):
                 output[[0,-1],:] = 0.0
                 output[:,[0,-1]] = 0.0
             return output
+
+    def __str__(self):
+        if self.s == 0.0:
+            return "Sum_i inf * Theta(f_i)"
+        return "Sum_i np.exp(s * f_i)"
 
 
 class TikhonovRegularization(LikelihoodTerm):
@@ -278,8 +307,11 @@ class TikhonovRegularization(LikelihoodTerm):
         if not self.initialized:
             self.init(model.A.shape[1])
         output = np.zeros((len(f), len(f)))
-        output[self.sel, self.sel] = np.dot(self.C.T, self.C)
+        output[self.sel, self.sel] = self.tau * np.dot(self.C.T, self.C)
         return output
+
+    def __str__(self):
+        return "tau * |C f|^2 / 2"
 
 class TikhonovRegularization2(LikelihoodTerm):
 

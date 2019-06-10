@@ -27,6 +27,7 @@ class Binning(object):
     def __init__(self, bins, *args, **kwargs):
         self.bins = bins
         self.fitted = False
+        self.rep = 1
 
     def fit(self, X, *args, **kwargs):
         """Fit method. Uses the samples X to fit the binning routine. 
@@ -50,6 +51,8 @@ class Binning(object):
         ----------
         X : numpy array, shape=(n_samples, n_dim)
             Samples to digitize.
+        weights : numpy array, shape=(n_samples,)
+            Weights for each sample.
 
         Returns
         -------
@@ -63,7 +66,7 @@ class Binning(object):
         if not self.fitted:
             raise RuntimeError("Binning Object not fitted: Call fit first!")
 
-    def histogram(self, X, return_xvals=False, *args, **kwargs):
+    def histogram(self, X, weights=None, return_xvals=False, *args, **kwargs):
         """Histogram method. Calculates a count vector for the samples X.
 
         Parameters
@@ -91,7 +94,7 @@ class Binning(object):
         if len(X.shape) < 2:
             X = X.reshape(-1, 1)
         cnts = self.digitize(X)
-        H = np.bincount(cnts, minlength=self.n_bins)
+        H = np.bincount(cnts, weights=weights, minlength=self.n_bins)
         if return_xvals:
             xvals = [np.mean(X[cnts == b], axis=0) for b in range(self.n_bins)]
             return H, np.array(xvals)
@@ -112,15 +115,18 @@ class GridBinning(Binning):
     """
     name = "EquidistantBinning"
 
-    def __init__(self, bins):
+    def __init__(self, bins, pmin=0.0, pmax=100.0):
         super(GridBinning, self).__init__(bins)
+        self.pmin = pmin
+        self.pmax = pmax
 
     def fit(self, X):
         super(GridBinning, self).fit(X)
         if len(X.shape) < 2:
             X = X.reshape(-1, 1)
         if type(self.bins) == int:
-            self.bins = [np.linspace(np.min(f), np.max(f), self.bins - 1)
+            self.bins = [np.linspace(np.percentile(f, self.pmin),
+                                     np.percentile(f, self.pmax), self.bins - 1)
                          for f in X.T]
         if type(self.bins[0]) == int:
             self.bins = [np.linspace(np.min(f), np.max(f), n)
@@ -180,3 +186,33 @@ class TreeBinning(Binning):
         for i, l in enumerate(self.leaves):
             p[idx == l] = i
         return p
+
+
+class EnsembleBinning(Binning):
+    name = "EnsembleBinning"
+
+    def __init__(self, *args, **kwargs):
+        self.binnings = args
+        self.fitted = False
+        self.rep = len(self.binnings)
+
+    def fit(self, X, y=None, bootstrap=True):
+        for b in self.binnings:
+            if bootstrap:
+                choice = np.random.choice(len(X), len(X))
+            else:
+                choice = np.ones(len(X), dtype=bool)
+            b.fit(X[choice,:], y[choice])
+        self.n_bins = sum(b.n_bins for b in self.binnings)
+        self.fitted = True
+
+    def digitize(self, X, *args, **kwargs):
+        super(EnsembleBinning, self).digitize(X)
+        digitizations = []
+        last_nbin = 0
+        for b in self.binnings:
+            digitizations.append(b.digitize(X) + last_nbin)
+            last_nbin = b.n_bins
+        D = np.hstack(digitizations)
+        print(D.shape)
+        return D
