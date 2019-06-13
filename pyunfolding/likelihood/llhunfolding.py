@@ -5,8 +5,7 @@ from ..model import Unfolding
 class LLHUnfolding:
     
     def __init__(self, binning_X, binning_y, likelihood=None):
-        self.binning_X = binning_X
-        self.binning_y = binning_y
+        self.model = Unfolding(binning_X, binning_y)
         
         if likelihood is None:
             self._llh = [llh.LeastSquares()]
@@ -16,18 +15,15 @@ class LLHUnfolding:
     
     def g(self, X):
         if self.is_fitted:
-            return self.binning_X.histogram(X)
+            return self.model.binning_X.histogram(X)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')
 
     def f(self, y):
         if self.is_fitted:
-            return self.binning_y.histogram(y)
+            return self.model.binning_y.histogram(y)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')
     
     def fit(self, X_train, y_train):
-        self.binning_X.fit(X_train)
-        self.binning_y.fit(y_train)
-        self.model = Unfolding(self.binning_X, self.binning_y)
         self.model.fit(X_train, y_train)
         self.llh = llh.Likelihood(self.model, self._llh)
         self.is_fitted = True

@@ -133,7 +133,7 @@ class GridBinning(Binning):
         self.pmin = pmin
         self.pmax = pmax
 
-    def fit(self, X):
+    def fit(self, X, *args, **kwargs):
         super(GridBinning, self).fit(X)
         if len(X.shape) < 2:
             X = X.reshape(-1, 1)
@@ -183,7 +183,7 @@ class TreeBinning(Binning):
         super(TreeBinning, self).__init__(bins)
         self.dtc = DecisionTreeClassifier(max_leaf_nodes=self.bins, **kwargs)
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, *args, **kwargs):
         super(TreeBinning, self).fit(X)
         if y is None:
             y = np.random.rand(len(X)) > 0.5
