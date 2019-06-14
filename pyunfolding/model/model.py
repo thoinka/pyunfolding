@@ -28,7 +28,7 @@ class Unfolding(object):
         bins = [np.arange(self.binning_X.n_bins + 1) - 0.5,
                 np.arange(self.binning_y.n_bins + 1) - 0.5, ]
         H, _, _ = np.histogram2d(x_class,
-                                 np.tile(y_class, self.binning_X.rep),
+                                 y_class,
                                  bins)
         #H /= float(self.binning_X.rep)
         self.A = (H + 1e-8) / np.sum(H + 1e-8, axis=0)
@@ -37,7 +37,7 @@ class Unfolding(object):
     def predict(self, f):
         if not self.fitted:
             raise RuntimeError("Model not fitted! Run fit first!")
-        return np.dot(self.A, f) * self.binning_X.rep
+        return np.dot(self.A, f)
 
     def predict_g(self, X):
         if not self.fitted:

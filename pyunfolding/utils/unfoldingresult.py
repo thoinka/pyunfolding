@@ -3,7 +3,7 @@ class UnfoldingResult:
         self.f = f
         self.f_err = f_err
         self.success = success
-        for key, val in kwargs:
+        for key, val in kwargs.items():
             self.__dict__[key] = val
 
     def __str__(self):

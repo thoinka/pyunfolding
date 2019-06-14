@@ -24,7 +24,7 @@ class NewtonMinimizer(SolutionBase):
                 success = True
                 break
             x_new = x[-1] - alpha * \
-                np.dot(np.linalg.inv(hess + 1e-8 * np.eye(len(hess))), grad)
+                np.dot(np.linalg.pinv(hess + 1e-8 * np.eye(len(hess))), grad)
             f_new = F(x_new)
 
             if f_new < f[-1]:

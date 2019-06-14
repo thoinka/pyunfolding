@@ -42,4 +42,6 @@ class Minimizer(SolutionBase):
                 error = np.nan
         return UnfoldingResult(f=result.x,
                                f_err=np.vstack((0.5 * error, 0.5 * error)),
-                               success=result.success)
+                               success=result.success,
+                               fun=result.fun,
+                               jac=result.jac)

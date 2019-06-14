@@ -13,14 +13,13 @@ class LeastSquares(LikelihoodTerm):
     def grad(self, model, f, g):
         g_est = model.predict(f)
         A = model.grad(f)
-        return (-np.dot(g.T, A) - np.dot(A.T, g)\
-               + np.dot(np.dot(A.T, A), f) + np.dot(f.T, np.dot(A.T, A))) * 0.5
+        return -(g - g_est).T @ A
 
     def hess(self, model, f, g):
         A = model.grad(f)
         H = model.hess(f)
         g_est = model.predict(f)
-        return np.dot(A.T, A) #- np.dot((g - g_est).T, H)
+        return np.dot(A.T, A)
 
 
 class WeightedLeastSquares(LikelihoodTerm):
@@ -33,18 +32,19 @@ class WeightedLeastSquares(LikelihoodTerm):
 
     def func(self, model, f, g):
         g_est = model.predict(f)
-        dg = (g - g_est) / (g + self.epsilon)
-        return 0.5 * dg.T @ dg
+        dg = (g - g_est)
+        icov = np.diag(1.0 / (g + self.epsilon))
+        return 0.5 * dg.T @ icov @ dg
 
     def grad(self, model, f, g):
         g_est = model.predict(f)
         A = model.grad(f)
-        return (-np.dot(g.T, A) - np.dot(A.T, g)\
-               + np.dot(np.dot(A.T, A), f) + np.dot(f.T, np.dot(A.T, A))) * 0.5
+        icov = np.diag(1.0 / (g + self.epsilon))
+        return -(g - g_est).T @ icov @ A
 
     def hess(self, model, f, g):
         A = model.grad(f)
         H = model.hess(f)
+        icov = np.diag(1.0 / (g + self.epsilon))
         g_est = model.predict(f)
-        A_w = A / np.sqrt(g.reshape(-1, 1) + self.epsilon)
-        return np.dot(A_w.T, A_w)#- np.dot((g - g_est).T, H)
+        return A.T @ icov @ A

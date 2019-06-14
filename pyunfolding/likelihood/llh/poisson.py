@@ -12,6 +12,8 @@ class Poisson(LikelihoodTerm):
 
     def func(self, model, f, g):
         g_est = model.predict(f)
+        if (g_est < 0.0).any():
+            return np.finfo(float).max
         return -np.sum(g * np.log(g_est + self.epsilon) - g_est)
 
     def grad(self, model, f, g):
