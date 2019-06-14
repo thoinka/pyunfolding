@@ -22,7 +22,15 @@ class LLHUnfolding:
         if self.is_fitted:
             return self.model.binning_y.histogram(y)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')
-    
+
+    @property
+    def n_bins_y(self):
+        return self.model.binning_y.n_bins
+
+    @property
+    def n_bins_X(self):
+        return self.model.binning_X.n_bins
+
     def fit(self, X_train, y_train):
         self.model.fit(X_train, y_train)
         self.llh = llh.Likelihood(self.model, self._llh)

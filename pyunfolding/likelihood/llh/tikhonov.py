@@ -28,6 +28,7 @@ class Tikhonov(LikelihoodTerm):
                  tau=1.0,
                  C="diff2",
                  exclude_edges=True,
+                 with_acceptance=False,
                  **params):
         """Initalization method
 
@@ -42,6 +43,7 @@ class Tikhonov(LikelihoodTerm):
         """
         self.c_name = C
         self.exclude_edges = exclude_edges
+        self.with_acceptance = with_acceptance
         self.tau = tau
         self.initialized = False
 
@@ -70,11 +72,15 @@ class Tikhonov(LikelihoodTerm):
     def func(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         return 0.5 * self.tau * np.sum(np.dot(self.C, f[self.sel]) ** 2)
 
     def grad(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         output = np.zeros(len(f))
         output[self.sel] = self.tau * np.dot(np.dot(self.C.T, self.C),
                                              f[self.sel])
@@ -83,6 +89,8 @@ class Tikhonov(LikelihoodTerm):
     def hess(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         output = np.zeros((len(f), len(f)))
         output[self.sel, self.sel] = self.tau * np.dot(self.C.T, self.C)
         return output
@@ -113,6 +121,7 @@ class TikhonovLog(LikelihoodTerm):
                  tau=1.0,
                  C="diff2",
                  exclude_edges=True,
+                 with_acceptance=False,
                  **params):
         """Initalization method
 
@@ -121,12 +130,17 @@ class TikhonovLog(LikelihoodTerm):
         tau : float, optional, default=1.0
             Regularization strength.
         C : str, optional, default="diff2"
-            Denomer of regularization strength.
+            Kind of acceptance. Valid values:
+            * "diff2": Second derivative
+            * "diff1": First derivative
         exclude_edges : bool, optional, default=True
             Whether or not to include the over- and underflow bins.
+        with_acceptance : bool, optional, default=False
+            Whether to regulize the acceptance-corrected result vector or not.
         """
         self.c_name = C
         self.exclude_edges = exclude_edges
+        self.with_acceptance = with_acceptance
         self.tau = tau
         self.initialized = False
 
@@ -155,17 +169,23 @@ class TikhonovLog(LikelihoodTerm):
     def func(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         logf = np.log(f[self.sel])
         return logf.T @ self.C.T @ self.C @ logf * 0.5
 
     def grad(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         return self.C.T @ self.C @ np.log(f[self.sel]) / f[self.sel]
 
     def hess(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
+        if self.with_acceptance:
+            f = np.diag(model.acceptance) @ f
         G = self.C @ self.C.T
         return -0.5 * (np.diag((G.T + G) @ np.log(f[self.sel]))
                        - (G.T + G)) / (f[self.sel] * f[self.sel].reshape(-1,1))
