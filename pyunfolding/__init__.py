@@ -4,6 +4,7 @@ from . import likelihood
 from . import plot
 from .likelihood import LLHUnfolding
 from .bayesian import BayesianUnfolding
+from .svd import SVDUnfolding
 
 
 __all__ = ["binning",
@@ -11,4 +12,5 @@ __all__ = ["binning",
            "likelihood",
            "plot",
            "LLHUnfolding",
-           "BayesianUnfolding"]
+           "BayesianUnfolding",
+           "SVDUnfolding"]

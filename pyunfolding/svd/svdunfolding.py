@@ -3,19 +3,7 @@ from ..utils import UnfoldingResult
 import numpy as np
 
 
-def _ibu(A, g, f0=None, n_iterations=5):
-    if f0 is None:
-        f_est = [np.ones(A.shape[1]) * np.sum(g) / A.shape[1]]
-    else:
-        f_est = [f0]
-    for _ in range(n_iterations):
-        B = (A * f_est[-1] / (A @ f_est[-1]).reshape(-1,1))
-        f_est_new = g @ B
-        f_est.append(f_est_new)
-    return np.array(f_est)[-1]
-
-
-class BayesianUnfolding:
+class SVDUnfolding:
     
     def __init__(self, binning_X, binning_y):
         self.model = Unfolding(binning_X, binning_y)
@@ -34,11 +22,20 @@ class BayesianUnfolding:
     def fit(self, X_train, y_train):
         self.model.fit(X_train, y_train)
         self.is_fitted = True
+        self.U, self.S, self.V = np.linalg.svd(self.model.A)
         
-    def predict(self, X, x0=None, n_iterations=5):
+    def predict(self, X, x0=None, sig_level=1.0):
         if self.is_fitted:
-            f = _ibu(self.model.A, self.g(X), f0=x0, n_iterations=n_iterations)
+            g = self.g(X)
+            R = np.eye(100)
+            h = np.abs(self.U.T @ g) / (self.U.T @ np.diag(g) @ self.U).diagonal()
+            R[h < sig_level,:] = 0.0
+            A_pinv_reg = self.V.T @ np.linalg.pinv(np.pad(np.diag(self.S), ((0, 80), (0, 0)), 'constant')) @ R @ self.U.T
+            f = A_pinv_reg @ g
+            cov = A_pinv_reg @ np.diag(g) @ A_pinv_reg.T
             return UnfoldingResult(f=f,
-                                   f_err=np.zeros((2,len(f))),
+                                   f_err=np.vstack((np.sqrt(cov.diagonal()),
+                                                    np.sqrt(cov.diagonal()))),
+                                   cov=cov,
                                    success=True)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')

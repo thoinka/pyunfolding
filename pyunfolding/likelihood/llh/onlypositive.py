@@ -35,7 +35,7 @@ class OnlyPositive(LikelihoodTerm):
             return np.zeros_like(f)
         else:
             exp_term = safe_exp(f / self.s)
-            output = self.a * exp_term / ((1.0 + exp_term) ** 2 * np.eself.s)
+            output = self.a * exp_term / ((1.0 + exp_term) ** 2 * self.s)
             if self.exclude_edges:
                 output[[0,-1]] = 0.0
             return output
