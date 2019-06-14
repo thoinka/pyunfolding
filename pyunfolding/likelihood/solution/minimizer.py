@@ -29,14 +29,16 @@ class Minimizer(SolutionBase):
                 params.update(method=method)
         result = minimize(F, x0=x0, **kwargs)
         try:
-            error = np.sqrt(np.linalg.pinv(
-                self.likelihood.hess(result.x, g)).diagonal())
+            Hinv = np.linalg.pinv(self.likelihood.hess(result.x, g))
+            error = np.sqrt(Hinv.diagonal())
         except:
             print('Analytical Hessian unavailable, will use numerical Hessian instead.')
             if hasattr(result, "hess_inv"):
-                error = np.sqrt(np.abs(result.hess_inv)).diagonal()
+                Hinv = result.hess_inv
+                error = np.sqrt(Hinv.diagonal())
             elif hasattr(result, "hess"):
-                error = np.sqrt(np.linalg.inv(result.hess).diagonal())
+                Hinv = np.linalg.pinv(result.hess)
+                error = np.sqrt(Hinv.diagonal())
             else:
                 print('No estimate for Hessian available.')
                 error = np.nan
@@ -44,4 +46,5 @@ class Minimizer(SolutionBase):
                                f_err=np.vstack((0.5 * error, 0.5 * error)),
                                success=result.success,
                                fun=result.fun,
-                               jac=result.jac)
+                               jac=result.jac,
+                               cov=Hinv)

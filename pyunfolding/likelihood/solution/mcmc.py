@@ -127,7 +127,8 @@ class MCMC(SolutionBase):
 
         result = UnfoldingResult(f=value,
                                  f_err=error,
-                                 success=True)
+                                 success=True,
+                                 cov=np.cov(x.T))
         if pass_samples:
             result.update(samples_x=x, samples_f=fvals)
         return result
