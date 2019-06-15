@@ -5,6 +5,7 @@ from . import plot
 from .likelihood import LLHUnfolding
 from .bayesian import BayesianUnfolding
 from .svd import SVDUnfolding
+from .dsea import DSEAUnfolding
 
 
 __all__ = ["binning",
@@ -13,4 +14,5 @@ __all__ = ["binning",
            "plot",
            "LLHUnfolding",
            "BayesianUnfolding",
-           "SVDUnfolding"]
+           "SVDUnfolding",
+           "DSEAUnfolding"]
