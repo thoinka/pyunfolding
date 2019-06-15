@@ -20,7 +20,6 @@ setup(
             "Intended Audience :: Developers",
             "Topic :: Software Development :: Build Tools",
             "License :: OSI Approved :: MIT License",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3.6"
         ],
         keywords="unfolding",
@@ -28,7 +27,7 @@ setup(
         install_requires=[
             "numpy",
             "scikit-learn>=0.18.1",
-            "scipy",
+            "scipy"
             "matplotlib"
         ]
 )
