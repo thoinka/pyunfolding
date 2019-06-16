@@ -27,7 +27,7 @@ setup(
         install_requires=[
             "numpy",
             "scikit-learn>=0.18.1",
-            "scipy"
+            "scipy",
             "matplotlib"
         ]
 )
