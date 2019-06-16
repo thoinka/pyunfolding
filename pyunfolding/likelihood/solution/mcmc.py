@@ -3,6 +3,7 @@ from collections import namedtuple
 from tqdm import tqdm
 from ...utils import error_central, error_shortest, error_best
 from ...utils import UnfoldingResult
+from ...utils import Posterior
 from .base import SolutionBase
 
 
@@ -100,28 +101,9 @@ class MCMC(SolutionBase):
         if verbose:
         	print("Acceptance rate: {}".format(acc))
 
-        if value_method == "median":
-            value = np.median(x, axis=0)
-        elif value_method == "best":
-            value = x[np.argmin(fvals)]
-        elif value_method == "mean":
-            value = np.mean(x, axis=0)
-        else:
-            raise ValueError("value_method {} not supported!"\
-                             .format(value_method))
-
-        if error_method == "central":
-            lower, upper = error_central(x)
-        elif error_method == "shortest":
-            lower, upper = error_shortest(x)
-        elif error_method == "best":
-            lower, upper = error_best(x, fvals)
-        elif error_method == "std":
-            std = np.std(x, axis=0)
-            lower, upper = value - std * 0.5, value + std * 0.5
-        else:
-            raise ValueError("error_method {} not supported!"\
-                             .format(error_method))
+        ppdf = Posterior(x, fvals)
+        value = ppdf.value(value_method)
+        lower, upper = ppdf.error(error_method)
 
         error = np.vstack((value - lower, upper - value))
 
