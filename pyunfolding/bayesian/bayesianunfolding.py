@@ -32,6 +32,8 @@ class BayesianUnfolding:
     
     def fit(self, X_train, y_train):
         self.model.fit(X_train, y_train)
+        self.n_bins_X = self.model.binning_X.n_bins
+        self.n_bins_y = self.model.binning_y.n_bins
         self.is_fitted = True
         
     def predict(self, X, x0=None, n_iterations=5):

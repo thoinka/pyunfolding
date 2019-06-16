@@ -81,21 +81,22 @@ class MCMC(SolutionBase):
         while True:
             if verbose:
                 print("Burnin Attempt %i" % i)
-            x, f, acc = self._steps(x0, g, scale, 1000, verbose)
+            x, f, acc = self._steps(x0, g, scale, 1000, verbose=False)
             x0 = x[np.argmin(f)]
-            if acc > 0.7:
-                scale *= 2.0
-            elif acc < 0.3:
-                scale *= 0.5
+            print("Acceptance rate: {}".format(acc))
+            if acc > 0.5:
+                scale *= 1.5
+            elif acc < 0.15:
+                scale *= 0.75
             else:
                 break
             i += 1
             if i > 50:
                 if verbose:
-                    print("Shit aint working, aborting ... %f" % scale)
+                    print("Maximum number of burnin attempts unsuccessful... Aborting. %f" % scale)
                 break
 
-        x, fvals, acc = self._steps(x0, g, scale, burnin, verbose)
+        x, fvals, acc = self._steps(x0, g, scale, burnin, verbose=False)
         x, fvals, acc = self._steps(x[np.argmin(f)], g, scale, n_iter, verbose)
 
         if verbose:

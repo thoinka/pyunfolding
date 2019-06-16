@@ -120,8 +120,8 @@ class Posterior:
                              .format(error_method))
         return lower, upper
     
-    def plot(self):
-        return corner_plot(self.X)
+    def plot(self, **kwargs):
+        return corner_plot(self.X, **kwargs)
 
     def value(self, method='median'):
         '''Calculates value from given sample.
