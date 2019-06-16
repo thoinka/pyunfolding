@@ -1,6 +1,7 @@
 import numpy as np
 from .. import solution
-from ...utils import num_gradient
+from ...utils import num_gradient, in_ipython_frontend
+from IPython.display import Math, display
 
 
 class Likelihood:
@@ -39,10 +40,14 @@ class Likelihood:
         self.append(llh)
 
     def __str__(self):
-        s = " + ".join([L.__str__() for L in self.llh])
+        s = r'-\log \mathcal{L}(\mathbf{f}|\mathbf{g}) = '
+        s += " + ".join([L.__str__() for L in self.llh])
         return s
 
     def __repr__(self):
+        if in_ipython_frontend():
+            display(Math(self.__str__()))
+            return ''
         return self.__str__()
 
     def solve(self, f0, X, solver_method='mcmc', **kwargs):
@@ -153,4 +158,7 @@ class LikelihoodTerm:
         return self.formula
 
     def __repr__(self):
+        if in_ipython_frontend():
+            display(Math(self.__str__()))
+            return ''
         return self.__str__()

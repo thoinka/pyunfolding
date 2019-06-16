@@ -103,7 +103,7 @@ class MCMC(SolutionBase):
 
         ppdf = Posterior(x, fvals)
         value = ppdf.value(value_method)
-        lower, upper = ppdf.error(error_method)
+        lower, upper = ppdf.error(error_method, best_fit=ppdf.value('best'))
 
         error = np.vstack((value - lower, upper - value))
 

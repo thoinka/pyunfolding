@@ -13,13 +13,13 @@ def cov2corr(cov):
     return corr
 
 
-def error_central(x, p=ONE_SIGMA):
+def error_central(x, p=ONE_SIGMA, **kwargs):
     lower = np.percentile(x, 100.0 * (1.0 - p) / 2.0, axis=0)
     upper = np.percentile(x, 100.0 * (1.0 + p) / 2.0, axis=0)
     return lower, upper
 
 
-def error_shortest(x, p=ONE_SIGMA):
+def error_shortest(x, p=ONE_SIGMA, **kwargs):
     lower = np.zeros(x.shape[1])
     upper = np.zeros(x.shape[1])
     N = int(p * len(x))
@@ -30,12 +30,14 @@ def error_shortest(x, p=ONE_SIGMA):
         lower[i], upper[i] = x_sort[shortest], x_sort[shortest + N]
     return lower, upper
 
-def error_best(x, f, p=ONE_SIGMA):
+
+def error_best(x, f, p=ONE_SIGMA, **kwargs):
     N = int(p * len(x))
     best = np.argsort(f)[:N]
     return np.min(x[best, :], axis=0), np.max(x[best, :], axis=0)
 
-def error_feldman_cousins(best_fit, x, p=ONE_SIGMA):
+
+def error_feldman_cousins(x, best_fit, p=ONE_SIGMA, **kwargs):
     diff = np.abs(x - best_fit)
     n_events = int(len(x) * p) + 1
     sigma_vec_best = np.zeros((2, len(best_fit)))
