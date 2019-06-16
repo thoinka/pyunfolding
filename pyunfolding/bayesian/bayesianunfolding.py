@@ -39,5 +39,6 @@ class BayesianUnfolding:
             f = _ibu(self.model.A, self.g(X), f0=x0, n_iterations=n_iterations)
             return UnfoldingResult(f=f,
                                    f_err=np.zeros((2,len(f))),
-                                   success=True)
+                                   success=True,
+                                   binning_y=self.model.binning_y)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')

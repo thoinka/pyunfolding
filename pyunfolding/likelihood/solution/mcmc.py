@@ -112,5 +112,5 @@ class MCMC(SolutionBase):
                                  success=True,
                                  cov=np.cov(x.T))
         if pass_samples:
-            result.update(samples_x=x, samples_f=fvals)
+            result.update(sample=ppdf)
         return result

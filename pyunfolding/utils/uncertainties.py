@@ -1,7 +1,16 @@
 import numpy as np
+from ..plot import corner_plot
 
 
 ONE_SIGMA = 0.682689492137085897
+
+
+def cov2corr(cov):
+    '''Convert covariance matrix to correlation matrix.
+    '''
+    std = np.sqrt(cov.diagonal())
+    corr = cov / np.outer(std, std)
+    return corr
 
 
 def error_central(x, p=ONE_SIGMA):
@@ -109,6 +118,9 @@ class Posterior:
                              .format(error_method))
         return lower, upper
     
+    def plot(self):
+        return corner_plot(self.X)
+
     def value(self, method='median'):
         '''Calculates value from given sample.
 

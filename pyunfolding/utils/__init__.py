@@ -1,18 +1,24 @@
 from .console import in_ipython_frontend
-from .uncertainties import error_central, error_shortest, error_best, error_feldman_cousins
+from .uncertainties import error_central, error_shortest, error_best, error_feldman_cousins, Posterior, cov2corr
 from .unfoldingresult import UnfoldingResult
 from .bootstrapper import Bootstrapper
 from .matrices import diff1_matrix, diff2_matrix
 from .binning import calc_bmids, calc_bdiff
+from .minimization import num_gradient
+from . import minimization
 
 __all__ = (
 	'in_python_frontend',
 	'error_central',
 	'error_shortest',
 	'error_best',
-	'error_feldman_cousins'
-	'UnfoldingResult'
+	'error_feldman_cousins',
+	'Posterior',
+	'UnfoldingResult',
 	'Bootstrapper',
 	'calc_bmids',
-	'calc_bdiff'
+	'calc_bdiff',
+	"num_gradient",
+    "minimization",
+    "cov2corr"
 )

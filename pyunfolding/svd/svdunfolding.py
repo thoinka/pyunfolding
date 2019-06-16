@@ -112,5 +112,6 @@ class SVDUnfolding:
                                    f_err=np.vstack((np.sqrt(cov.diagonal()),
                                                     np.sqrt(cov.diagonal()))),
                                    cov=cov,
-                                   success=True)
+                                   success=True,
+                                   binning_y=self.model.binning_y)
         raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')

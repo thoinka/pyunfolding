@@ -116,5 +116,6 @@ class DSEAUnfolding:
                                    f_err=np.vstack((f_err, f_err)),
                                    success=True,
                                    samples=prediction,
-                                   cov=np.cov(prediction.T) * len(prediction))
+                                   cov=np.cov(prediction.T) * len(prediction),
+                                   binning_y=self.binning_y)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')

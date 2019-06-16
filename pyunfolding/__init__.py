@@ -6,8 +6,6 @@ from .likelihood import LLHUnfolding
 from .bayesian import BayesianUnfolding
 from .svd import SVDUnfolding
 from .dsea import DSEAUnfolding
-from .minimization import num_gradient
-from . import minimization
 
 
 __all__ = ["binning",
@@ -17,6 +15,4 @@ __all__ = ["binning",
            "LLHUnfolding",
            "BayesianUnfolding",
            "SVDUnfolding",
-           "DSEAUnfolding",
-           "num_gradient",
-           "minimization"]
+           "DSEAUnfolding"]

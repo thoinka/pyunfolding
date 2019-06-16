@@ -10,6 +10,7 @@ def hex2int(txt):
     h = txt.lstrip('#')
     return tuple(int(h[i:i+2], 16) / 255.0 for i in (0, 2 ,4))
 
+
 def make_colormap(seq):
     """Return a LinearSegmentedColormap
     seq: a sequence of floats and RGB-tuples. The floats should be increasing
@@ -26,10 +27,12 @@ def make_colormap(seq):
             cdict['blue'].append([item, b1, b2])
     return LinearSegmentedColormap('CustomMap', cdict)
 
+
 cmap_colors = ["#ffffff", "7cc149"]
 custom_greens = make_colormap([hex2int(c) for c in cmap_colors])
 
-def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=True, best_fit=None, scatter=False):
+
+def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatter=False):
     """Corner-style plot
     """
     n_corners = X.shape[1]
@@ -71,7 +74,8 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=True, best_fit=None, scatter
                 t_0 = np.linspace(mins[0], maxs[0], 100)
                 t_1 = np.linspace(mins[1], maxs[1], 100)
                 mx, my = np.meshgrid(t_0, t_1)
-                Z = kde(np.vstack((mx.flatten(), my.flatten()))).reshape(100,100)
+                Z = kde(np.vstack((mx.flatten(),
+                                   my.flatten()))).reshape(100,100)
                 z0 = np.max(Z)
                 z1 = z0 / np.e
                 z2 = z1 / np.e ** 2
@@ -83,18 +87,21 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=True, best_fit=None, scatter
                     ax[i,j].scatter(X[sel,j], X[sel,i], s=2, color="k")
                 ax[i,j].contour(t_0, t_1, Z, levels=[z2, z1, z0], colors=["k", "k"], linestyles=["--", "-"])
             else:
-                H, bx, by, _ = ax[i,j].hist2d(X[:,j], X[:,i], bins=n_bins, cmap=custom_greens, **hist2d_kw)
+                H, bx, by, _ = ax[i,j].hist2d(X[:,j], X[:,i], bins=n_bins,
+                                              cmap=custom_greens, **hist2d_kw)
                 z0 = np.max(H)
                 z1 = z0 / np.e
                 z2 = z1 / np.e ** 2
-                ax[i,j].contour((bx[1:] + bx[:-1]) * 0.5, (by[1:] + by[:-1]) * 0.5, H, levels=[z2, z1, z0], colors=["k", "k"], linestyles=["--", "-"])
+                ax[i,j].contour((bx[1:] + bx[:-1]) * 0.5, (by[1:] + by[:-1]) * 0.5, H.T, levels=[z2, z1, z0], colors=["k", "k"], linestyles=["--", "-"])
+                ax[i,j].legend([], title="%.3f" % np.corrcoef(X[:,i],X[:,j])[0,1], frameon=False, loc="upper left")
             if best_fit is not None:
                 ax[i,j].axvline(best_fit[j], color="k", linestyle=":")
                 ax[i,j].axhline(best_fit[i], color="k", linestyle=":")
         ax[i,j].xaxis.set_visible(False)
         ax[i,j].yaxis.set_visible(False)
         if j == 0:
-            ax[i,j].yaxis.set_visible(True)
+            if i != 0:
+                ax[i,j].yaxis.set_visible(True)
             if i != 0:
                 ax[i,j].set_ylabel("Bin {}".format(i))
         if i == n_corners - 1:
@@ -102,4 +109,4 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=True, best_fit=None, scatter
             ax[i,j].set_xlabel("Bin {}".format(j + 1))
             
     plt.subplots_adjust(wspace=0.05, hspace=0.05)
-    return fig, ax
+    return ax

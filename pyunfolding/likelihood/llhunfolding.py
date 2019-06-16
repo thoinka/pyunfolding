@@ -119,5 +119,8 @@ class LLHUnfolding:
             Keywords for the solver.
         '''
         if self.is_fitted:
-            return self.llh.solve(x0, X, solver_method=solver_method, **kwargs)
+            result = self.llh.solve(x0, X, solver_method=solver_method,
+                                    **kwargs)
+            result.update(binning_y=self.model.binning_y)
+            return result
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')

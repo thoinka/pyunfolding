@@ -1,3 +1,6 @@
+from ..plot import plot_unfolding_result
+
+
 class UnfoldingResult:
     def __init__(self, f, f_err, success, *args, **kwargs):
         self.f = f
@@ -19,6 +22,9 @@ class UnfoldingResult:
         except:
             s += "No error message was left."
         return s
+
+    def plot(self, *args, **kwargs):
+        return plot_unfolding_result(self, *args, **kwargs)
 
     def __repr__(self):
         return self.__str__()
