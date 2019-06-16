@@ -33,7 +33,8 @@ class Bootstrapper:
             f=value,
             f_err=error,
             success=True,
-            cov=np.cov(fs.T)
+            cov=np.cov(fs.T),
+            binning_y=self.unfolding.model.binning_y
         )
         if return_sample:
             result.update(sample=ppdf)

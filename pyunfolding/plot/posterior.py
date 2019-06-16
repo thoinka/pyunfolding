@@ -56,7 +56,7 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatte
                 ax[i,j].set_xlim([np.min(X[:,i]), np.max(X[:,i])])
                 ax[i,j].set_ylim([0,None])
             else:
-                H, b, _ = ax[i,j].hist(X[:,i], bins="auto", normed=True, histtype="step", color="k")
+                H, b, _ = ax[i,j].hist(X[:,i], bins="auto", density=True, histtype="step", color="k")
                 bmid = (b[1:] + b[:-1]) * 0.5
                 perc_s1 = [np.percentile(X[:,i], 15), np.percentile(X[:,i], 85)] 
                 perc_s2 = [np.percentile(X[:,i], 2.5), np.percentile(X[:,i], 99.75)] 
