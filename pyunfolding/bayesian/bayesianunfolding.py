@@ -9,8 +9,7 @@ def _ibu(A, g, f0=None, n_iterations=5):
     else:
         f_est = [f0]
     for _ in range(n_iterations):
-        B = (A * f_est[-1] / (A @ f_est[-1]).reshape(-1,1))
-        f_est_new = g @ B
+        f_est_new = g @ (A * f_est[-1] / (A @ f_est[-1]).reshape(-1,1))
         f_est.append(f_est_new)
     return np.array(f_est)[-1]
 

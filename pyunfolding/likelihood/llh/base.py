@@ -1,5 +1,6 @@
 import numpy as np
 from .. import solution
+from ...utils import num_gradient
 
 
 class Likelihood:
@@ -123,7 +124,9 @@ class LikelihoodTerm:
         output : numpy array, shape=(len(f))
             Likelihood gradient.
         """
-        raise NotImplementedError("Gradient call needs to be implemented.")
+        return num_gradient(lambda f_: self.func(model, f_, g),
+                            f, **kwargs)
+        # raise NotImplementedError("Gradient call needs to be implemented.")
 
     def hess(self, model, f, g, *args, **kwargs):
         """Likelihood Hessian evaluation.
@@ -142,7 +145,9 @@ class LikelihoodTerm:
         output : numpy array, shape=(len(f), len(f))
             Likelihood Hessian value.
         """
-        raise NotImplementedError("Hessian call needs to be implemented.")
+        return num_gradient(lambda f_: self.grad(model, f_, g),
+                            f, **kwargs)
+        # raise NotImplementedError("Hessian call needs to be implemented.")
 
     def __str__(self):
         return self.formula
