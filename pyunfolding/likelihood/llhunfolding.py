@@ -78,7 +78,7 @@ class LLHUnfolding:
             return self.model.binning_y.histogram(y, weights=weights)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
-    def fit(self, X_train, y_train):
+    def fit(self, X_train, y_train, *args, **kwargs):
         '''Fit routine.
 
         Parameters
@@ -88,7 +88,7 @@ class LLHUnfolding:
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
-        self.model.fit(X_train, y_train)
+        self.model.fit(X_train, y_train, *args, **kwargs)
         self.llh = llh.Likelihood(self.model, self._llh)
         self.is_fitted = True
         self.n_bins_y = self.model.binning_y.n_bins

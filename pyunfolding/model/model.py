@@ -41,7 +41,7 @@ class Unfolding(object):
             self.b = self.binning_X.histogram(X_background,
                                               weights=weights_background)
 
-        if acceptance:
+        if acceptance is None:
             self.acceptance = np.ones(self.binning_y.n_bins)
         else:
             self.acceptance = acceptance
@@ -49,9 +49,11 @@ class Unfolding(object):
         self.A = (H + 1e-8) / np.sum(H + 1e-8, axis=0)
         self.fitted = True
 
-    def predict(self, f):
+    def predict(self, f, acceptance=False):
         if not self.fitted:
             raise RuntimeError("Model not fitted! Run fit first!")
+        if acceptance:
+            f = acceptance * f
         return np.dot(self.A, f) + self.b
 
     def predict_g(self, X):

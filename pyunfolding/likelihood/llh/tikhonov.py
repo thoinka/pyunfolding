@@ -122,6 +122,7 @@ class TikhonovLog(LikelihoodTerm):
                  C="diff2",
                  exclude_edges=True,
                  with_acceptance=False,
+                 epsilon=1e-3,
                  **params):
         """Initalization method
 
@@ -142,6 +143,7 @@ class TikhonovLog(LikelihoodTerm):
         self.exclude_edges = exclude_edges
         self.with_acceptance = with_acceptance
         self.tau = tau
+        self.epsilon = epsilon
         self.initialized = False
 
     def init(self, n):
@@ -171,15 +173,15 @@ class TikhonovLog(LikelihoodTerm):
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
-        logf = np.log(f[self.sel])
-        return logf.T @ self.C.T @ self.C @ logf * 0.5
+        logf = np.log(f[self.sel] + self.epsilon)
+        return self.tau * logf.T @ self.C.T @ self.C @ logf * 0.5
 
     def grad(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
-        return self.C.T @ self.C @ np.log(f[self.sel]) / f[self.sel]
+        return self.tau * self.C.T @ self.C @ np.log(f[self.sel]) / f[self.sel]
 
     def hess(self, model, f, g):
         if not self.initialized:
@@ -187,5 +189,5 @@ class TikhonovLog(LikelihoodTerm):
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
         G = self.C @ self.C.T
-        return -0.5 * (np.diag((G.T + G) @ np.log(f[self.sel]))
+        return -0.5 * self.tau * (np.diag((G.T + G) @ np.log(f[self.sel]))
                        - (G.T + G)) / (f[self.sel] * f[self.sel].reshape(-1,1))
