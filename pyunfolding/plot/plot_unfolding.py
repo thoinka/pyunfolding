@@ -20,8 +20,14 @@ def plot_unfolding_result(result,
         sl = slice(1, -1, None)
     else:
         sl = slice(None, None, None)
-    x = result.binning_y.bmids[0]
-    dx = result.binning_y.bdiff[0]
+    try:
+        x = result.binning_y.bmids[0]
+        dx = result.binning_y.bdiff[0]
+        target_var = True
+    except AttributeError:
+        x = np.arange(len(result.f)) + 1
+        dx = np.ones(len(result.f))
+        target_var = False
     y = result.f
     y_err = result.f_err
     if ax is None:
@@ -41,6 +47,9 @@ def plot_unfolding_result(result,
     ax.errorbar(x[sl], y[sl], 0.0, 0.5 * dx[sl], ls='', color='k', label='Unfolding result')
     if truth is not None:
         ax.plot(x[sl], truth[sl], drawstyle='steps-mid', label='Truth', color='k', alpha=0.5)
-    ax.set_xlabel('Target Variable $y$')
+    if target_var:
+        ax.set_xlabel('Target Variable $y$')
+    else:
+        ax.set_xlabel('Target Variable Bin $i$')
     ax.set_ylabel('Counts per Bin')
     return ax

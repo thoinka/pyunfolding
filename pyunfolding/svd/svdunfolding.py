@@ -90,7 +90,7 @@ class SVDUnfolding:
         self.is_fitted = True
         self.U, self.S, self.V = np.linalg.svd(self.model.A)
         
-    def predict(self, X, sig_level=1.0):
+    def predict(self, X, cutoff=None):
         '''Calculates an estimate for the unfolding.
 
         Parameters
@@ -102,10 +102,13 @@ class SVDUnfolding:
         '''
         if self.is_fitted:
             g = self.g(X)
-            R = np.eye(100)
+            if cutoff is None:
+                cutoff = np.ones(len(g))
+            R = np.diag(cutoff)
             h = np.abs(self.U.T @ g) / (self.U.T @ np.diag(g) @ self.U).diagonal()
-            R[h < sig_level,:] = 0.0
-            A_pinv_reg = self.V.T @ np.linalg.pinv(np.pad(np.diag(self.S), ((0, 80), (0, 0)), 'constant')) @ R @ self.U.T
+            I_pinv = np.zeros((self.model.A.shape[1], self.model.A.shape[0]))
+            I_pinv[np.arange(len(self.S)), np.arange(len(self.S))] = 1.0 / self.S
+            A_pinv_reg = self.V.T @ I_pinv @ R @ self.U.T
             f = A_pinv_reg @ g
             cov = A_pinv_reg @ np.diag(g) @ A_pinv_reg.T
             return UnfoldingResult(f=f,

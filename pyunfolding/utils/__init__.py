@@ -5,6 +5,7 @@ from .bootstrapper import Bootstrapper
 from .matrices import diff1_matrix, diff2_matrix
 from .binning import calc_bmids, calc_bdiff
 from .minimization import num_gradient
+from .analytical import analytical_solution
 from . import minimization
 
 __all__ = (
@@ -20,5 +21,6 @@ __all__ = (
 	'calc_bdiff',
 	"num_gradient",
     "minimization",
-    "cov2corr"
+    "cov2corr",
+    'analytical_solution'
 )
