@@ -36,7 +36,7 @@ class MCMC(SolutionBase):
               X,
               n_iter=100000,
               verbose=True,
-              pass_samples=False,
+              pass_samples=True,
               burnin=10000,
               error_method="central",
               value_method="median"):
