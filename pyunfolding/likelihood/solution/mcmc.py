@@ -9,16 +9,16 @@ from .base import SolutionBase
 
 class MCMC(SolutionBase):
 
-    def _steps(self, x0, g, scale, n_iter, verbose=False):
-        x = np.zeros((n_iter, len(x0)))
+    def _steps(self, x0, g, scale, n_steps, verbose=False):
+        x = np.zeros((n_steps, len(x0)))
         x[0,:] = x0
-        f = np.zeros(n_iter)
+        f = np.zeros(n_steps)
         f[0] = self.likelihood(x[0,:], g)
         acc = 0
         if verbose:
-            iterator = tqdm(range(1, n_iter), ascii=True)
+            iterator = tqdm(range(1, n_steps), ascii=True)
         else:
-            iterator = range(1, n_iter)
+            iterator = range(1, n_steps)
         for i in iterator:
             x_new = x[i - 1] + np.random.randn(len(x0)) * scale
             f_new = self.likelihood(x_new, g)
@@ -29,7 +29,7 @@ class MCMC(SolutionBase):
             else:
             	x[i,:] = x[i - 1,:]
             	f[i] = f[i - 1]
-        return x, f, acc / float(n_iter)
+        return x, f, acc / float(n_steps)
 
     def solve(self,
               x0,
@@ -48,11 +48,11 @@ class MCMC(SolutionBase):
             Initial value for minimization.
         X : numpy array, shape=(n_samples,n_obs)
             Measured observables.
-        n_iter : int, optional, default=100000
+        n_steps : int, optional, default=100000
             Number of iterations.
         verbose : bool, optional, default=True
             Whether or not to use verbose mode.
-        pass_samples : bool, optional, default=False
+        pass_samples : bool, optional, default=True
             Whether or not to pass the samples generated.
         burnin : int, optional, default=10000
             Number of samples to withdraw as burn-in.
@@ -97,7 +97,7 @@ class MCMC(SolutionBase):
                 break
 
         x, fvals, acc = self._steps(x0, g, scale, burnin, verbose=False)
-        x, fvals, acc = self._steps(x[np.argmin(f)], g, scale, n_iter, verbose)
+        x, fvals, acc = self._steps(x[np.argmin(f)], g, scale, n_steps, verbose)
 
         if verbose:
         	print("Acceptance rate: {}".format(acc))
