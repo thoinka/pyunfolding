@@ -1,4 +1,5 @@
 import numpy as np
+from ..utils import UnfoldingResult
 
 
 class DSEAUnfolding:
@@ -67,17 +68,20 @@ class DSEAUnfolding:
         classifier : sklearn.classifier
             An sklearn classifier 
         '''
-        self.binning_y.fit(X_train, y_train)
+        self.binning_y.fit(y_train)
         if X_train.ndim == 1:
             self.X_train = X_train.reshape(-1, 1)
         else:
             self.X_train = X_train
+        self.f_train = self.binning_y.histogram(y_train)
         self.y_train_int = self.binning_y.digitize(y_train)
         self.labels = np.unique(self.y_train_int)
         self.is_fitted = True
         self.classifier = classifier
+        self.weights = None
         
-    def predict(self, X, n_iterations=1, alpha=1.0, plus=True, **kwargs):
+    def predict(self, X, n_iterations=1, alpha=1.0, plus=True, warm_start=True,
+                **kwargs):
         '''Calculates an estimate for the unfolding.
 
         Parameters
@@ -97,19 +101,23 @@ class DSEAUnfolding:
         if X.ndim == 1:
             X = X.reshape(-1,1)
         if self.is_fitted:
-            weights = np.ones(self.binning_y.n_bins)
+            if self.weights is None or not warm_start:
+                self.weights = np.ones(self.binning_y.n_bins)
             for _ in range(n_iterations):
                 classif = self.classifier(**kwargs)
-                classif.fit(self.X_train, self.y_train_int, sample_weight=weights[self.y_train_int])
+                classif.fit(self.X_train, self.y_train_int,
+                            sample_weight=self.weights[self.y_train_int])
                 
-                prediction = np.empty((len(X), self.binning_y.n_bins))
+                prediction = np.zeros((len(X), self.binning_y.n_bins))
                 prediction[:,self.labels] = classif.predict_proba(X)
-                prediction_training = np.empty((len(self.X_train), self.binning_y.n_bins))
+                prediction_training = np.zeros((len(self.X_train), self.binning_y.n_bins))
                 prediction_training[:,self.labels] = classif.predict_proba(self.X_train)
-                
                 if plus:
-                    w_new = np.sum(prediction, axis=0) / np.sum(prediction_training, axis=0)
-                    weights = (alpha * w_new + weights) / (1.0 + alpha)
+                    f = alpha * np.sum(prediction, axis=0) + f
+                else:
+                    f = np.sum(prediction, axis=0) 
+                w_new = (f + 1e-8) / (self.f_train + 1e-8)
+                self.weights = np.copy(w_new)
             f = np.sum(prediction, axis=0)
             f_err = np.sqrt(np.mean(prediction ** 2, axis=0) * len(prediction))
             return UnfoldingResult(f=f,
