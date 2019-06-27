@@ -34,7 +34,7 @@ class MCMC(SolutionBase):
     def solve(self,
               x0,
               X,
-              n_iter=100000,
+              n_steps=100000,
               verbose=True,
               pass_samples=True,
               burnin=10000,
