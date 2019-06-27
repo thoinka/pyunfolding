@@ -114,6 +114,7 @@ class Posterior:
             lower, upper = error_best(self.X, self.F)
         elif method == "std":
             std = np.std(self.X, axis=0)
+            value = np.mean(self.X, axis=0)
             lower, upper = value - std * 0.5, value + std * 0.5
         else:
             raise ValueError("error_method {} not supported!"\
