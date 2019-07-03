@@ -7,6 +7,7 @@ from .bayesian import BayesianUnfolding
 from .svd import SVDUnfolding
 from .dsea import DSEAUnfolding
 from .analytical import AnalyticalUnfolding
+from .truee import TRUEEUnfolding
 
 
 __all__ = ["binning",
@@ -17,4 +18,5 @@ __all__ = ["binning",
            "BayesianUnfolding",
            "SVDUnfolding",
            "DSEAUnfolding",
-           'AnalyticalUnfolding']
+           'AnalyticalUnfolding',
+           'TRUEEUnfolding']
