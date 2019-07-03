@@ -39,7 +39,7 @@ class TRUEEUnfolding(UnfoldingBase):
     TRUEE_RESULT = 'TrueeResultFile.root'
     
     def __init__(self, binning_X, binning_y):
-        super(BayesianUnfolding, self).__init__()
+        super(TRUEEUnfolding, self).__init__()
         self.binning_X = binning_X
         self.binning_y = binning_y
         
@@ -63,7 +63,7 @@ class TRUEEUnfolding(UnfoldingBase):
             f.write(output)
         
     def fit(self, X_train, y_train):
-        X_train, y_train = super(BayesianUnfolding, self).fit(X_train, y_train)
+        X_train, y_train = super(TRUEEUnfolding, self).fit(X_train, y_train)
         self.binning_X.fit(X_train, y_train)
         self.binning_y.fit(y_train)
         X_digit = self.binning_X.digitize(X_train)
@@ -109,7 +109,7 @@ class TRUEEUnfolding(UnfoldingBase):
         if not self.is_fitted:
             raise RuntimeError('Unfolding not yet fitted. Use `fit` routine first.')
     
-        X = super(BayesianUnfolding, self).predict(X)
+        X = super(TRUEEUnfolding, self).predict(X)
 
         # Storing parameters to config dictionary
         self._config.update(number_deg_free=n_dof)
