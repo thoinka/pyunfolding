@@ -1,4 +1,6 @@
 from ..plot import plot_unfolding_result
+import numpy as np
+from matrices import check_covariance
 
 
 class UnfoldingResult:
@@ -8,6 +10,9 @@ class UnfoldingResult:
         self.success = success
         for key, val in kwargs.items():
             self.__dict__[key] = val
+
+        if 'cov' in self.__dict__.keys():
+            check_covariance(self.cov)
 
     def __str__(self):
         if self.success:
