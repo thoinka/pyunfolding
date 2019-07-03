@@ -1,6 +1,6 @@
 from ..plot import plot_unfolding_result
 import numpy as np
-from matrices import check_covariance
+from .matrices import check_covariance
 
 
 class UnfoldingResult:
