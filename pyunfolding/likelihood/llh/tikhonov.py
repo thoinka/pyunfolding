@@ -173,6 +173,8 @@ class TikhonovLog(LikelihoodTerm):
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
+        if (f < 0.0).any():
+            return np.finfo('float').max
         logf = np.log(f[self.sel] + self.epsilon)
         return self.tau * logf.T @ self.C.T @ self.C @ logf * 0.5
 
@@ -181,6 +183,8 @@ class TikhonovLog(LikelihoodTerm):
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
+        if (f < 0.0).any():
+            return np.ones(len(f))
         return self.tau * self.C.T @ self.C @ np.log(f[self.sel]) / f[self.sel]
 
     def hess(self, model, f, g):
@@ -188,6 +192,8 @@ class TikhonovLog(LikelihoodTerm):
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
+        if (f < 0.0).any():
+            return np.zeros((len(f), len(f)))
         G = self.C @ self.C.T
         return -0.5 * self.tau * (np.diag((G.T + G) @ np.log(f[self.sel]))
                        - (G.T + G)) / (f[self.sel] * f[self.sel].reshape(-1,1))
