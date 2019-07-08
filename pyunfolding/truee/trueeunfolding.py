@@ -1,8 +1,12 @@
 import numpy as np
 import pandas as pd
 import os
-import root_pandas as rp
-import ROOT
+import warnings
+try:
+    import root_pandas as rp
+    import ROOT
+except:
+    warnings.warn('No root support found.')
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
 

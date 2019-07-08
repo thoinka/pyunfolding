@@ -34,7 +34,9 @@ class NewtonMinimizer(SolutionBase):
             else:
                 alpha *= beta
         cov = np.linalg.pinv(H(x[-1]))
+        grad = G(x[-1])
         std = np.sqrt(cov.diagonal())
         return UnfoldingResult(f=x[-1],
+                               jac=grad,
                                f_err=np.vstack((0.5 * std, 0.5 * std)),
                                success=success, cov=cov)
