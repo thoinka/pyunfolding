@@ -3,6 +3,7 @@ from matplotlib.colors import LogNorm, LinearSegmentedColormap
 import numpy as np
 from itertools import product
 from scipy.interpolate import interp1d
+from matplotlib.cm import get_cmap
 from scipy.stats import gaussian_kde
 
 
@@ -28,13 +29,15 @@ def make_colormap(seq):
     return LinearSegmentedColormap('CustomMap', cdict)
 
 
-cmap_colors = ["#ffffff", "7cc149"]
-custom_greens = make_colormap([hex2int(c) for c in cmap_colors])
 
 
-def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatter=False):
+
+def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatter=False,
+                color_correlation=True, color='#aaaaaa', colormap='coolwarm'):
     """Corner-style plot
     """
+    cmap_colors = ["#ffffff", color]
+    custom_cmap = make_colormap([hex2int(c) for c in cmap_colors])
     n_corners = X.shape[1]
     fig, ax = plt.subplots(n_corners, n_corners, figsize=(n_corners * 2, n_corners * 2))
     for i, j in product(range(n_corners), range(n_corners)):
@@ -49,8 +52,8 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatte
                 cs /= np.max(cs)
                 one_s = (cs > 0.15) & (cs < 0.85)
                 two_s = (cs > 0.025) & (cs < 0.975)
-                ax[i,j].fill_between(t[two_s], y[two_s], facecolor="#7cc149", alpha=0.2)
-                ax[i,j].fill_between(t[one_s], y[one_s], facecolor="#7cc149")
+                ax[i,j].fill_between(t[two_s], y[two_s], facecolor=color, alpha=0.2)
+                ax[i,j].fill_between(t[one_s], y[one_s], facecolor=color)
                 ax[i,j].plot(t, y, color="k")
                 #ax[i,j].axhline(0.0, color="k")
                 ax[i,j].set_xlim([np.min(X[:,i]), np.max(X[:,i])])
@@ -59,10 +62,10 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatte
                 H, b, _ = ax[i,j].hist(X[:,i], bins="auto", density=True, histtype="step", color="k")
                 bmid = (b[1:] + b[:-1]) * 0.5
                 perc_s1 = [np.percentile(X[:,i], 15), np.percentile(X[:,i], 85)] 
-                perc_s2 = [np.percentile(X[:,i], 2.5), np.percentile(X[:,i], 99.75)] 
-                ax[i,j].fill_between(bmid, np.zeros_like(H), H, step="mid", facecolor="#7cc149",
+                perc_s2 = [np.percentile(X[:,i], 2.5), np.percentile(X[:,i], 97.5)] 
+                ax[i,j].fill_between(bmid, np.zeros_like(H), H, step="mid", facecolor=color,
                                      where=(bmid >= perc_s1[0]) & (bmid <= perc_s1[1]))
-                ax[i,j].fill_between(bmid, np.zeros_like(H), H, step="mid", facecolor="#7cc149", alpha=0.2, where=(bmid >= perc_s2[0]) & (bmid <= perc_s2[1]))
+                ax[i,j].fill_between(bmid, np.zeros_like(H), H, step="mid", facecolor=color, alpha=0.2, where=(bmid >= perc_s2[0]) & (bmid <= perc_s2[1]))
             if best_fit is not None:
                 ax[i,j].axvline(best_fit[i], color="k", linestyle=":")
             ax[i,j].set_frame_on(False)
@@ -80,20 +83,27 @@ def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatte
                 z1 = z0 / np.e
                 z2 = z1 / np.e ** 2
                 ax[i,j].legend([], title="%.3f" % np.corrcoef(X[:,i],X[:,j])[0,1], frameon=False, loc="upper left")
-                ax[i,j].contourf(t_0, t_1, Z, levels=np.linspace(0.0, z0, 20), cmap=custom_greens)
+                ax[i,j].contourf(t_0, t_1, Z, levels=np.linspace(0.0, z0, 20), cmap=custom_cmap)
                 if scatter:
                     Z_pnts = kde(X[:,[j,i]].T)
                     sel = Z_pnts < z2
                     ax[i,j].scatter(X[sel,j], X[sel,i], s=2, color="k")
                 ax[i,j].contour(t_0, t_1, Z, levels=[z2, z1, z0], colors=["k", "k"], linestyles=["--", "-"])
             else:
+                if color_correlation:
+                    corr = np.corrcoef(X[:,j], X[:,i])[0,1]
+                    cmap_colors = ['#ffffff', get_cmap(colormap)(0.5 * corr + 0.5)]
+                    cmap = make_colormap([cmap_colors[1][:-1], hex2int(cmap_colors[0])])
+                else:
+                    cmap = custom_cmap
+                    ax[i,j].legend([], title="%.3f" % np.corrcoef(X[:,i],X[:,j])[0,1], frameon=False, loc="upper left")
                 H, bx, by, _ = ax[i,j].hist2d(X[:,j], X[:,i], bins=n_bins,
-                                              cmap=custom_greens, **hist2d_kw)
+                                              cmap=cmap, **hist2d_kw)
                 z0 = np.max(H)
                 z1 = z0 / np.e
                 z2 = z1 / np.e ** 2
                 ax[i,j].contour((bx[1:] + bx[:-1]) * 0.5, (by[1:] + by[:-1]) * 0.5, H.T, levels=[z2, z1, z0], colors=["k", "k"], linestyles=["--", "-"])
-                ax[i,j].legend([], title="%.3f" % np.corrcoef(X[:,i],X[:,j])[0,1], frameon=False, loc="upper left")
+                
             if best_fit is not None:
                 ax[i,j].axvline(best_fit[j], color="k", linestyle=":")
                 ax[i,j].axhline(best_fit[i], color="k", linestyle=":")
