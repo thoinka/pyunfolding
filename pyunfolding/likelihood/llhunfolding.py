@@ -1,6 +1,8 @@
 from . import llh
 from ..model import Unfolding
 
+import numpy as np
+
 
 class LLHUnfolding:
     '''Unfolding based on a maximum likelihood fit. Multiple likelihoods can
@@ -119,6 +121,8 @@ class LLHUnfolding:
             Keywords for the solver.
         '''
         if self.is_fitted:
+            if x0 is None:
+                x0 = len(X) * np.ones(self.n_bins_y) / self.n_bins_y
             result = self.llh.solve(x0, X, solver_method=solver_method,
                                     **kwargs)
             result.update(binning_y=self.model.binning_y)

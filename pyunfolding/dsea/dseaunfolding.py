@@ -101,6 +101,7 @@ class DSEAUnfolding:
         if X.ndim == 1:
             X = X.reshape(-1,1)
         if self.is_fitted:
+            f = np.zeros(self.binning_y.n_bins)
             if self.weights is None or not warm_start:
                 self.weights = np.ones(self.binning_y.n_bins)
             for _ in range(n_iterations):
