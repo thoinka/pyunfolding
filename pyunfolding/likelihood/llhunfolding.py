@@ -1,8 +1,9 @@
 from . import llh
 from ..model import Unfolding
+from ..base import UnfoldingBase
 
 
-class LLHUnfolding:
+class LLHUnfolding(UnfoldingBase):
     '''Unfolding based on a maximum likelihood fit. Multiple likelihoods can
     be defined using several predefined likelihood terms in the sub-module
     `pyunfolding.likelihood.llh`.
@@ -30,54 +31,14 @@ class LLHUnfolding:
         Number of bins in the target space.
     '''
     def __init__(self, binning_X, binning_y, likelihood=None):
+        super(LLHUnfolding, self).__init__()
         self.model = Unfolding(binning_X, binning_y)
         
         if likelihood is None:
             self._llh = [llh.LeastSquares()]
         else:
             self._llh = likelihood
-        self.is_fitted = False
     
-    def g(self, X, weights=None):
-        '''Returns an observable vector :math:`\mathbf{g}` given a sample
-        of observables `X`.
-
-        Parameters
-        ----------
-        X : numpy.array, shape=(n_samples, n_observables)
-            Observable sample.
-        weights : numpy.array, shape=(n_samples,)
-            Weights corresponding to the sample.
-
-        Returns
-        -------
-        g : numpy.array, shape=(n_bins_X,)
-            Observable vector
-        '''
-        if self.is_fitted:
-            return self.model.binning_X.histogram(X, weights=weights)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
-
-    def f(self, y, weights=None):
-        '''Returns a result vector :math:`\mathbf{f}` given a sample
-        of target variable values `y`.
-
-        Parameters
-        ----------
-        y : numpy.array, shape=(n_samples,)
-            Target variable sample.
-        weights : numpy.array, shape=(n_samples,)
-            Weights corresponding to the sample.
-
-        Returns
-        -------
-        f : numpy.array, shape=(n_bins_X,)
-             Result vector.
-        '''
-        if self.is_fitted:
-            return self.model.binning_y.histogram(y, weights=weights)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
-
     def fit(self, X_train, y_train, *args, **kwargs):
         '''Fit routine.
 
@@ -88,6 +49,7 @@ class LLHUnfolding:
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
+        X_train, y_train = super(LLHUnfolding, self).fit(X_train, y_train)
         self.model.fit(X_train, y_train, *args, **kwargs)
         self.llh = llh.Likelihood(self.model, self._llh)
         self.is_fitted = True
@@ -118,6 +80,7 @@ class LLHUnfolding:
         kwargs : dict
             Keywords for the solver.
         '''
+        X = super(LLHUnfolding, self).predict(X)
         if self.is_fitted:
             result = self.llh.solve(x0, X, solver_method=solver_method,
                                     **kwargs)

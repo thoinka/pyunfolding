@@ -2,6 +2,7 @@ import numpy as np
 from ..model import Unfolding
 from ..utils import diff2_matrix, diff1_matrix
 from ..utils import UnfoldingResult
+from ..base import UnfoldingBase
 
 
 def analytical_solution(A, g, tau=0.0, Sigma=None, C_matrix=None):
@@ -35,7 +36,7 @@ def analytical_solution(A, g, tau=0.0, Sigma=None, C_matrix=None):
 	return UnfoldingResult(f=f_est, f_err=f_err, cov=cov, success=True)
 
 
-class AnalyticalUnfolding:
+class AnalyticalUnfolding(UnfoldingBase):
     '''Analytical solution to the unfolding problem in the case of a Weighted
     Least Squares Likelihood with Tikhonov regularization.
 
@@ -68,51 +69,11 @@ class AnalyticalUnfolding:
     '''
     def __init__(self, binning_X, binning_y, exclude_edges=True, C='diff2',
                  Sigma=None):
+        super(AnalyticalUnfolding, self).__init__()
         self.model = Unfolding(binning_X, binning_y)
         self.Sigma = Sigma
-        self.is_fitted = False
         self.exclude_edges = exclude_edges
         self.C = C
-    
-    def g(self, X, weights=None):
-        '''Returns an observable vector :math:`\mathbf{g}` given a sample
-        of observables `X`.
-
-        Parameters
-        ----------
-        X : numpy.array, shape=(n_samples, n_observables)
-            Observable sample.
-        weights : numpy.array, shape=(n_samples,)
-            Weights corresponding to the sample.
-
-        Returns
-        -------
-        g : numpy.array, shape=(n_bins_X,)
-            Observable vector
-        '''
-        if self.is_fitted:
-            return self.model.binning_X.histogram(X, weights=weights)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
-
-    def f(self, y, weights=None):
-        '''Returns a result vector :math:`\mathbf{f}` given a sample
-        of target variable values `y`.
-
-        Parameters
-        ----------
-        y : numpy.array, shape=(n_samples,)
-            Target variable sample.
-        weights : numpy.array, shape=(n_samples,)
-            Weights corresponding to the sample.
-
-        Returns
-        -------
-        f : numpy.array, shape=(n_bins_X,)
-             Result vector.
-        '''
-        if self.is_fitted:
-            return self.model.binning_y.histogram(y, weights=weights)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
     def fit(self, X_train, y_train, *args, **kwargs):
         '''Fit routine.
@@ -124,6 +85,8 @@ class AnalyticalUnfolding:
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
+        X_train, y_train = super(AnalyticalUnfolding, self).fit(X_train,
+                                                                y_train)
         self.model.fit(X_train, y_train, *args, **kwargs)
         self.is_fitted = True
         self.n_bins_y = self.model.binning_y.n_bins
@@ -149,6 +112,7 @@ class AnalyticalUnfolding:
         tau : float
             Regularization strength.
         '''
+        X = super(AnalyticalUnfolding, self).predict(X)
         if self.is_fitted:
             g = self.g(X)
             if self.Sigma == 'poisson':

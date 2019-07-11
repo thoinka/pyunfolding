@@ -8,7 +8,47 @@ class Bootstrapper:
     def __init__(self, unfolding, n_bootstraps=100):
         self.unfolding = unfolding
         self.n_bootstraps = n_bootstraps
-    
+
+    def g(self, X, weights=None):
+        '''Returns an observable vector :math:`\mathbf{g}` given a sample
+        of observables `X`.
+
+        Parameters
+        ----------
+        X : numpy.array, shape=(n_samples, n_observables)
+            Observable sample.
+        weights : numpy.array, shape=(n_samples,)
+            Weights corresponding to the sample.
+
+        Returns
+        -------
+        g : numpy.array, shape=(n_bins_X,)
+            Observable vector
+        '''
+        if self.is_fitted:
+            return self.unfolding.g(X, weights=weights)
+        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
+
+    def f(self, y, weights=None):
+        '''Returns a result vector :math:`\mathbf{f}` given a sample
+        of target variable values `y`.
+
+        Parameters
+        ----------
+        y : numpy.array, shape=(n_samples,)
+            Target variable sample.
+        weights : numpy.array, shape=(n_samples,)
+            Weights corresponding to the sample.
+
+        Returns
+        -------
+        f : numpy.array, shape=(n_bins_X,)
+             Result vector.
+        '''
+        if self.is_fitted:
+            return self.unfolding.f(y, weights=weights)
+        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
+
     def fit(self, X_train, y_train):
         self.unfolding.fit(X_train, y_train)
     
