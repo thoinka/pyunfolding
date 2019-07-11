@@ -78,7 +78,7 @@ class SVDUnfolding(UnfoldingBase):
             Keywords required by mode.
 
         '''
-        X = super(SVDUnfolding, self).fit(X)
+        X = super(SVDUnfolding, self).predict(X)
         if self.is_fitted:
             g = self.g(X)
             if mode == 'gaussian':
