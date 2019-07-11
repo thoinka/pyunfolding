@@ -28,6 +28,8 @@ if __name__ == '__main__':
     binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99)
 
     # Analytical Unfolding.
+    # Takes the analytical solution of a regularized, weighted least squares
+    # likelihood. The regularization is adjusted using using the keyword tau.
     ana_unfolding = pu.AnalyticalUnfolding(binning_x, binning_y,
                                            Sigma='poisson')
     ana_unfolding.fit(x_train, y_train)
@@ -39,6 +41,9 @@ if __name__ == '__main__':
     plt.savefig('analytical_unfolding_result.pdf')
 
     # SVD Unfolding (with Gaussian cutoff).
+    # Performs a singular value decomposition and smoothly surpresses small
+    # singular values in order to avoid oscillations. The shape of the
+    # supression function is changed by additional keywords, i.e. width.
     svd_unfolding = pu.SVDUnfolding(binning_x, binning_y)
     svd_unfolding.fit(x_train, y_train)
     result_svd = svd_unfolding.predict(x_test, mode='gaussian', width=4.0)
@@ -47,6 +52,11 @@ if __name__ == '__main__':
     plt.savefig('svd_unfolding_result.pdf')
 
     # Bayesian Unfolding.
+    # Iterative Bayesian Unfolding. The unfolded spectrum is estimated using
+    # a bayesian guess that is fed back into the training data in every
+    # iteration. The more iterations are performed using the keyword
+    # n_iterations, the less regularized the unfolding becomes. There's
+    # no out-of-the-box error estimation available yet.
     bay_unfolding = pu.BayesianUnfolding(binning_x, binning_y)
     bay_unfolding.fit(x_train, y_train)
     result_bay = bay_unfolding.predict(x_test, n_iterations=5)
@@ -54,7 +64,23 @@ if __name__ == '__main__':
     result_bay.plot(truth=f_true)
     plt.savefig('bayesian_unfolding_result.pdf')
 
+    # Bayesian Unfolding in a Bootstrapping Pipeline.
+    # Errors can always be estimated using bootstrapping, which is easily
+    # performed using the Bootstrapper.
+    bay_unfolding = pu.utils.Bootstrapper(
+        pu.BayesianUnfolding(binning_x, binning_y)
+        )
+    bay_unfolding.fit(x_train, y_train)
+    result_bay = bay_unfolding.predict(x_test, n_iterations=5)
+
+    result_bay.plot(truth=f_true)
+    plt.savefig('bayesian_bootstrap_unfolding_result.pdf')
+
     # DSEA Unfolding.
+    # Unfolding problem is formulated as a classification problem. A classifier
+    # is used to estimate the probability that one event belongs to the true
+    # energy bin i. To shake off the inherent bias in the training data, its
+    # weights are updated in similar fashion to iterative bayesian unfolding.
     dsea_unfolding = pu.DSEAUnfolding(binning_y)
     dsea_unfolding.fit(x_train, y_train, RandomForestClassifier)
     result_dsea = dsea_unfolding.predict(x_test, min_samples_leaf=20,
@@ -64,6 +90,9 @@ if __name__ == '__main__':
     plt.savefig('dsea_unfolding_result.pdf')
 
     # LLH Unfolding.
+    # A likelihood is minimized directly using one of several methods.
+    # Regularization is possible using several options. Among them is a MCMC
+    # sampler that actually returns the posterior pdf.
     llh_unfolding = pu.LLHUnfolding(binning_x, binning_y,
                                 likelihood=[pu.likelihood.llh.Poisson(),
                                             pu.likelihood.llh.Tikhonov(4e-4)])
