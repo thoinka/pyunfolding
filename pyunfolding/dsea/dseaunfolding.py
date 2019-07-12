@@ -6,7 +6,8 @@ class DSEAUnfolding:
     """DSEA Unfolding: Instead of defining an unfolding model, the probability
     :math:`f(i|\mathbf{x})`, i.e. the probability of an event being originally
     from a target variable bin :math:`i` given it's observables
-    :math:`\mathbf{x}` is estimated using a classifier. The unfolded spectrum is then estimated by accumulating all conditional probabilities. As this
+    :math:`\mathbf{x}` is estimated using a classifier. The unfolded spectrum is
+    then estimated by accumulating all conditional probabilities. As this
     propagates the bias in the training data for the most part, an iterative
     approach very similar to the bayesian unfolding is used to 'shake off' the
     bias. To achieve that, the training data is reweighted according to the
@@ -35,6 +36,10 @@ class DSEAUnfolding:
     def __init__(self, binning_y):
         self.binning_y = binning_y
         self.is_fitted = False
+
+    def g(self, *args, **kwargs):
+        '''Not available with this unfolding method'''
+        raise NotImplementedError('No observable binning required in DSEA')
 
     def f(self, y):
         '''Returns a result vector :math:`\mathbf{f}` given a sample
@@ -111,8 +116,9 @@ class DSEAUnfolding:
                 
                 prediction = np.zeros((len(X), self.binning_y.n_bins))
                 prediction[:,self.labels] = classif.predict_proba(X)
-                prediction_training = np.zeros((len(self.X_train), self.binning_y.n_bins))
-                prediction_training[:,self.labels] = classif.predict_proba(self.X_train)
+                prediction_training = np.zeros((len(self.X_train),
+                                                self.binning_y.n_bins))
+                prediction_training[:, self.labels] = classif.predict_proba(self.X_train)
                 if plus:
                     f = alpha * np.sum(prediction, axis=0) + f
                 else:

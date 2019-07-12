@@ -39,17 +39,16 @@ class BayesianUnfolding(UnfoldingBase):
         super(BayesianUnfolding, self).__init__()
         self.model = Unfolding(binning_X, binning_y)
     
-    def g(self, X):
-        if self.is_fitted:
-            return self.model.binning_X.histogram(X)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
-
-    def f(self, y):
-        if self.is_fitted:
-            return self.model.binning_y.histogram(y)
-        raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
-    
     def fit(self, X_train, y_train):
+        '''Fit routine.
+
+        Parameters
+        ----------
+        X_train : numpy.array, shape=(n_samples, n_obervables)
+            Observable sample.
+        y_train : numpy.array, shape=(n_samples,)
+            Target variable sample.
+        '''
         X_train, y_train = super(BayesianUnfolding, self).fit(X_train, y_train)
         self.model.fit(X_train, y_train)
         self.n_bins_X = self.model.binning_X.n_bins
@@ -57,6 +56,16 @@ class BayesianUnfolding(UnfoldingBase):
         self.is_fitted = True
         
     def predict(self, X, x0=None, n_iterations=5):
+        '''Calculates an estimate for the unfolding.
+        Parameters
+        ----------
+        X : numpy.array, shape=(n_samples, n_obervables)
+            Observable sample.
+        x0 : numpy.array, shape=(n_bins_y)
+            Initial value for the unfolding.
+        n_iterations : int
+            Number of iterations.
+        '''
         X = super(BayesianUnfolding, self).predict(X)
         f = _ibu(self.model.A, self.g(X), f0=x0, n_iterations=n_iterations)
         return UnfoldingResult(f=f,

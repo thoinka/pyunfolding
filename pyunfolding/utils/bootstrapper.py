@@ -4,7 +4,24 @@ from .unfoldingresult import UnfoldingResult
 
 
 class Bootstrapper:
-    
+    '''Helps wrapping an unfolding pipeline into a bootstrapping scheme in order
+    to estimate the uncertainties.
+
+    Parameters
+    ----------
+    unfolding : pu.UnfoldingBase object
+        The unfolding object.
+    n_boostraps : int
+        Number of bootstraps.
+
+    Attributes
+    ----------
+    unfolding : pu.UnfoldingBase object
+        The unfolding object.
+    n_boostraps : int
+        Number of bootstraps.
+    '''
+
     def __init__(self, unfolding, n_bootstraps=100):
         self.unfolding = unfolding
         self.n_bootstraps = n_bootstraps
@@ -49,14 +66,40 @@ class Bootstrapper:
             return self.unfolding.f(y, weights=weights)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
-    def fit(self, X_train, y_train):
-        self.unfolding.fit(X_train, y_train)
+    def fit(self, X_train, y_train, **kwargs):
+        '''Fit routine, calls the fit routine of `Bootstrapper.unfolding`
+
+        Parameters
+        ----------
+        X_train : numpy.array, shape=(n_samples, n_obervables)
+            Observable sample.
+        y_train : numpy.array, shape=(n_samples,)
+            Target variable sample.
+        kwargs : dict
+            Additional keywords for the fit routine.
+        '''
+        self.unfolding.fit(X_train, y_train, **kwargs)
     
     def predict(self, X, x0=None,
                 error_method='central',
                 value_method='median',
-                return_sample=False,
+                return_sample=True,
                 **kwargs):
+        '''Calculates the unfolding in a bootstrapping scheme.
+
+        Parameters
+        ----------
+        X : numpy.array, shape=(n_samples, n_obervables)
+            Observable sample.
+        x0 : numpy.array, shape=(n_bins_y)
+            Initial value for the unfolding.
+        error_method : str
+            Method used to estimate the uncertainty region of each bin.
+        value_method : str
+            Method used to estimate the best fit value for each bin.
+        return_sample : bool
+            Whether or not to return the full bootstrapped sample.
+        '''
         fs = []
         for _ in range(self.n_bootstraps):
             bs = np.random.choice(len(X), len(X), replace=True)

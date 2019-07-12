@@ -9,7 +9,11 @@ def analytical_solution(A, g, tau=0.0, Sigma=None, C_matrix=None):
 	'''Analytical solution of the unfolding problem given a
 	Tikhonov-regularized Least-Squares Likelihood approach:
 
-	:math:`\mathcal{L}(\mathbf{f}|\mathbf{g}) = (\mathbf{g}-\mathrm{A}\mathbf{f})^\top \Sigma^{-1} (\mathbf{g}-\mathrm{A}\mathbf{f}) + \frac{\tau}{2} \mathbf{f}^\top \Gamma^\top \Gamma \mathbf{f}
+	.. math::
+
+        \mathcal{L}(\mathbf{f}|\mathbf{g}) = (\mathbf{g}-
+        \mathrm{A}\mathbf{f})^\top \Sigma^{-1} (\mathbf{g}-\mathrm{A}\mathbf{f})
+         + \frac{\tau}{2} \mathbf{f}^\top \Gamma^\top \Gamma \mathbf{f}
 	'''
 	lenf = A.shape[1]
 
@@ -103,7 +107,8 @@ class AnalyticalUnfolding(UnfoldingBase):
             self.C = c_gen(self.n_bins_y)
         
     def predict(self, X, tau=0.0, **kwargs):
-        '''Calculates an estimate for the unfolding by maximizing the likelihood function (or minimizing the log-likelihood).
+        '''Calculates an estimate for the unfolding by maximizing the likelihood
+        function (or minimizing the log-likelihood).
 
         Parameters
         ----------
