@@ -15,7 +15,7 @@ def check_symmetry(A, rtol=1e-05, atol=1e-08):
 
 
 def check_posdef(A):
-    return (np.linalg.eig(A)[0] > 0).all()
+    return (np.linalg.eig(A)[0] >= 0).all()
 
 
 def check_covariance(cov):

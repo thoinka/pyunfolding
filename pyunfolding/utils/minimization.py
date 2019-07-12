@@ -69,9 +69,9 @@ def momentum_minimizer(fun,
         delta_x = x[-1] - x[-2]
         if np.linalg.norm(g) < tol:
             return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                                      n_iter=i, success=True), np.array(x)
+                                      n_iter=i, success=True)
     return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                              n_iter=max_iter, success=False), np.array(x)
+                              n_iter=max_iter, success=False)
 
 
 def rmsprop_minimizer(fun,
@@ -121,9 +121,9 @@ def rmsprop_minimizer(fun,
         x += [x[-1] - m]
         if np.linalg.norm(g) < tol:
             return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                                      n_iter=i, success=True), np.array(x)
+                                      n_iter=i, success=True)
     return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                              n_iter=max_iter, success=False), np.array(x)
+                              n_iter=max_iter, success=False)
 
 
 def adam_minimizer(fun,
@@ -173,9 +173,9 @@ def adam_minimizer(fun,
         x += [x[-1] - lr * m_ / (np.sqrt(v_) + 1e-8)]
         if np.linalg.norm(g) < tol:
             return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                                      n_iter=i, success=True), np.array(x)
+                                      n_iter=i, success=True)
     return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                              n_iter=max_iter, success=False), np.array(x)
+                              n_iter=max_iter, success=False)
 
 
 def adadelta_minimizer(fun,
@@ -218,9 +218,9 @@ def adadelta_minimizer(fun,
         x += [x[-1] + delta_theta]
         if np.linalg.norm(g) < tol:
             return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                                      n_iter=i, success=True), np.array(x)
+                                      n_iter=i, success=True)
     return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
-                              n_iter=max_iter, success=False), np.array(x)
+                              n_iter=max_iter, success=False)
 
 
 def num_gradient(fun, x0, eps=1e-6):
