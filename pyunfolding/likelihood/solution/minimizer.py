@@ -11,16 +11,32 @@ __gd_minimizer__ = [
     'rmsprop'
 ]
 
+# List of available scipy optimizers and whether or not they
+# support gradient or hessian information.
+__scipy_minimizer_opt__ = {
+    'nelder-mead':  {'grad': False, 'hess': False},
+    'powell':       {'grad': False, 'hess': False},
+    'cg':           {'grad': True,  'hess': False},
+    'bfgs':         {'grad': True,  'hess': False},
+    'newton-cg':    {'grad': True,  'hess': True },
+    'dogleg':       {'grad': True,  'hess': True },
+    'trust-ncg':    {'grad': True,  'hess': True },
+    'trust-krylov': {'grad': True,  'hess': True },
+    'trust-exact':  {'grad': True,  'hess': True },
+    'l-bfgs-g':     {'grad': True,  'hess': False},
+    'tnc':          {'grad': True,  'hess': False},
+    'cobyla':       {'grad': False, 'hess': False},
+    'slsqp':        {'grad': True,  'hess': False},
+    'trust-constr': {'grad': True,  'hess': True },
+}
+
 
 class Minimizer(SolutionBase):
 
     def __init__(self, likelihood):
         self.likelihood = likelihood
 
-    def solve(self, x0, X, method=None,
-              gradient=False, hessian=False, *args, **kwargs):
-        self.gradient = gradient
-        self.hessian = hessian
+    def solve(self, x0, X, method=None, *args, **kwargs):
         g = self.likelihood.model.predict_g(X)
 
         def F(p): return self.likelihood(p, g)
@@ -39,16 +55,12 @@ class Minimizer(SolutionBase):
             error = np.sqrt(Hinv.diagonal())
         else:
             params = {}
-            if self.gradient:
+            if method is None:
+                method = 'bfgs'
+            if __scipy_minimizer_opt__[method.lower()]['grad']:
                 params.update(jac=lambda p: self.likelihood.grad(p, g))
-                if method is not None:
-                    params.update(method=method)
-            if self.hessian:
-                params.update(hess=lambda p: self.likelihood.hess(p, g))
-                if method is None:
-                    params.update(method="trust-ncg")
-                else:
-                    params.update(method=method)
+            if __scipy_minimizer_opt__[method.lower()]['hess']:
+                params.update(jac=lambda p: self.likelihood.hess(p, g))
             result = minimize(F, x0=x0, **kwargs)
             try:
                 Hinv = np.linalg.pinv(self.likelihood.hess(result.x, g))

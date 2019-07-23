@@ -58,7 +58,7 @@ class LLHUnfolding(UnfoldingBase):
         self.n_bins_y = self.model.binning_y.n_bins
         self.n_bins_X = self.model.binning_X.n_bins
         
-    def predict(self, X, x0=None, solver_method='mcmc', **kwargs):
+    def predict(self, X, x0=None, solver_method='minimizer', **kwargs):
         '''Calculates an estimate for the unfolding by maximizing the likelihood function (or minimizing the log-likelihood).
 
         Parameters
