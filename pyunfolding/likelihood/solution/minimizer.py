@@ -77,7 +77,7 @@ class Minimizer(SolutionBase):
                     print('No estimate for Hessian available.')
                     error = np.nan
         return UnfoldingResult(f=result.x,
-                               f_err=np.vstack((0.5 * error, 0.5 * error)),
+                               f_err=np.vstack((error, error)),
                                success=result.success,
                                fun=result.fun,
                                jac=result.jac,

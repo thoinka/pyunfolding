@@ -55,18 +55,14 @@ class Tikhonov(LikelihoodTerm):
         n : int
             Shape of matrix.
         """
+        padding = 1 if self.exclude_edges else 0
         if self.c_name == "diff1":
-            c_gen = diff1_matrix
+            self.C = diff1_matrix(n, padding)
         elif self.c_name == 'diff2':
-            c_gen = diff2_matrix
+            self.C = diff2_matrix(n, padding)
 
-        if self.exclude_edges:
-            self.C = c_gen(n - 2)
-            self.sel = slice(1, -1, None)
-        else:
-            self.C = c_gen(n)
-            self.sel = slice(None, None, None)
-
+        tau_vec = self.tau * np.ones(n)
+        self.CT_C = np.diag(tau_vec) @ self.C.T @ self.C
         self.initialized = True
 
     def func(self, model, f, g):
@@ -74,26 +70,21 @@ class Tikhonov(LikelihoodTerm):
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
-        return 0.5 * self.tau * np.sum(np.dot(self.C, f[self.sel]) ** 2)
+        return 0.5 * f.T @ self.CT_C @ f
 
     def grad(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
-        output = np.zeros(len(f))
-        output[self.sel] = self.tau * np.dot(np.dot(self.C.T, self.C),
-                                             f[self.sel])
-        return output
-
+        return np.dot(self.CT_C, f)
+        
     def hess(self, model, f, g):
         if not self.initialized:
             self.init(model.A.shape[1])
         if self.with_acceptance:
             f = np.diag(model.acceptance) @ f
-        output = np.zeros((len(f), len(f)))
-        output[self.sel, self.sel] = self.tau * np.dot(self.C.T, self.C)
-        return output
+        return self.CT_C
 
 
 class TikhonovLog(LikelihoodTerm):
@@ -154,18 +145,14 @@ class TikhonovLog(LikelihoodTerm):
         n : int
             Shape of matrix.
         """
+        padding = 1 if self.exclude_edges else 0
         if self.c_name == "diff1":
-            c_gen = diff1_matrix
+            self.C = diff1_matrix(n, padding)
         elif self.c_name == 'diff2':
-            c_gen = diff2_matrix
+            self.C = diff2_matrix(n, padding)
 
-        if self.exclude_edges:
-            self.C = c_gen(n - 2)
-            self.sel = slice(1, -1, None)
-        else:
-            self.C = c_gen(n)
-            self.sel = slice(None, None, None)
-
+        tau_vec = self.tau * np.ones(n)
+        self.CT_C = np.diag(tau_vec) @ self.C.T @ self.C
         self.initialized = True
 
     def func(self, model, f, g):
@@ -176,7 +163,7 @@ class TikhonovLog(LikelihoodTerm):
         if (f < 0.0).any():
             return np.finfo('float').max
         logf = np.log(f[self.sel] + self.epsilon)
-        return self.tau * logf.T @ self.C.T @ self.C @ logf * 0.5
+        return logf.T @ self.CT_C @ logf * 0.5
 
     def grad(self, model, f, g):
         if not self.initialized:
@@ -185,7 +172,7 @@ class TikhonovLog(LikelihoodTerm):
             f = np.diag(model.acceptance) @ f
         if (f < 0.0).any():
             return np.ones(len(f))
-        return self.tau * self.C.T @ self.C @ np.log(f[self.sel]) / f[self.sel]
+        return self.CT_C @ np.log(f[self.sel]) / f[self.sel]
 
     def hess(self, model, f, g):
         if not self.initialized:
@@ -194,6 +181,6 @@ class TikhonovLog(LikelihoodTerm):
             f = np.diag(model.acceptance) @ f
         if (f < 0.0).any():
             return np.zeros((len(f), len(f)))
-        G = self.C @ self.C.T
-        return -0.5 * self.tau * (np.diag((G.T + G) @ np.log(f[self.sel]))
+        G = self.CT_C
+        return -0.5 * (np.diag((G.T + G) @ np.log(f[self.sel]))
                        - (G.T + G)) / (f[self.sel] * f[self.sel].reshape(-1,1))

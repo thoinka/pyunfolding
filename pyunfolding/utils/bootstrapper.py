@@ -66,7 +66,7 @@ class Bootstrapper:
             return self.unfolding.f(y, weights=weights)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
-    def fit(self, X_train, y_train, **kwargs):
+    def fit(self, X_train, y_train, *args, **kwargs):
         '''Fit routine, calls the fit routine of `Bootstrapper.unfolding`
 
         Parameters
@@ -78,12 +78,13 @@ class Bootstrapper:
         kwargs : dict
             Additional keywords for the fit routine.
         '''
-        self.unfolding.fit(X_train, y_train, **kwargs)
+        self.unfolding.fit(X_train, y_train, *args, **kwargs)
     
-    def predict(self, X, x0=None,
+    def predict(self, X,
                 error_method='central',
                 value_method='median',
                 return_sample=True,
+                *args,
                 **kwargs):
         '''Calculates the unfolding in a bootstrapping scheme.
 
@@ -91,8 +92,6 @@ class Bootstrapper:
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
-        x0 : numpy.array, shape=(n_bins_y)
-            Initial value for the unfolding.
         error_method : str
             Method used to estimate the uncertainty region of each bin.
         value_method : str
@@ -103,7 +102,7 @@ class Bootstrapper:
         fs = []
         for _ in range(self.n_bootstraps):
             bs = np.random.choice(len(X), len(X), replace=True)
-            result = self.unfolding.predict(X=X[bs], x0=x0, **kwargs)
+            result = self.unfolding.predict(X=X[bs], *args, **kwargs)
             fs.append(result.f)
         fs = np.array(fs)
 
@@ -112,12 +111,16 @@ class Bootstrapper:
         value = ppdf.value(value_method)
 
         error = np.vstack((value - lower, upper - value))
+        try:
+            binning_y = self.unfolding.model.binning_y
+        except:
+            binning_y = self.unfolding.binning_y
         result = dict(
             f=value,
             f_err=error,
             success=True,
             cov=np.cov(fs.T),
-            binning_y=self.unfolding.model.binning_y
+            binning_y=binning_y
         )
         if return_sample:
             result.update(sample=ppdf)

@@ -31,10 +31,11 @@ def analytical_solution(A, g, tau=0.0, Sigma=None, C_matrix=None):
 	iSigma = np.linalg.pinv(Sigma)
 
 	B = np.linalg.pinv(A.T @ iSigma @ A
-	                   + 0.5 * tau * C_matrix.T @ C_matrix) @ A.T @ iSigma
+	                   + tau * C_matrix.T @ C_matrix) @ A.T @ iSigma
 
 	f_est = B @ g
-	cov = B @ np.diag(g) @ B.T
+	cov = np.linalg.pinv(A.T @ iSigma @ A + tau * C_matrix.T @ C_matrix)
+    # cov = B @ np.diag(g) @ B.T
 	f_err = np.sqrt(np.vstack([cov.diagonal(), cov.diagonal()]))
 
 	return UnfoldingResult(f=f_est, f_err=f_err, cov=cov, success=True)
@@ -120,8 +121,9 @@ class AnalyticalUnfolding(UnfoldingBase):
         X = super(AnalyticalUnfolding, self).predict(X)
         if self.is_fitted:
             g = self.g(X)
-            if self.Sigma == 'poisson':
-                self.Sigma = np.diag(g)
+            if type(self.Sigma) is str:
+                if self.Sigma == 'poisson':
+                    self.Sigma = np.diag(g)
             result = analytical_solution(self.model.A, g, tau, self.Sigma,
                                          self.C)
             result.update(binning_y=self.model.binning_y)

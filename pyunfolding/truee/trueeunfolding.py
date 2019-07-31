@@ -2,11 +2,18 @@ import numpy as np
 import pandas as pd
 import os
 import warnings
+
 try:
     import root_pandas as rp
     import ROOT
+    check = os.system('truee')
+    if check != 0:
+        raise RuntimeError()
+    TRUEE_AVAILABLE = True
 except:
-    warnings.warn('No root support found.')
+    TRUEE_AVAILABLE = False
+    warnings.warn('TRUEE Unfolding is unavailable on this system.')
+
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
 
@@ -43,6 +50,8 @@ class TRUEEUnfolding(UnfoldingBase):
     TRUEE_RESULT = 'TrueeResultFile.root'
     
     def __init__(self, binning_X, binning_y):
+        if not TRUEE_AVAILABLE:
+            raise RuntimeError('TRUEE is not available on this system.')
         super(TRUEEUnfolding, self).__init__()
         self.binning_X = binning_X
         self.binning_y = binning_y
@@ -83,8 +92,6 @@ class TRUEEUnfolding(UnfoldingBase):
         y_digit = self.binning_y.digitize(y_train)
         df_train = pd.DataFrame(np.column_stack((X_digit, y_digit)),
                                 columns=['x', 'y'])
-        #df_train = pd.DataFrame(np.column_stack((X_train, y_train)),
-        #                        columns=['x', 'y'])
         
         file_mc = 'temp_truee_train.root'
         self.tempdir = '_truee_temp_dir'
@@ -98,13 +105,11 @@ class TRUEEUnfolding(UnfoldingBase):
         
         self._config.update(branch_y='x')
         self._config.update(number_y_bins=self.binning_X.n_bins)
-        #self._config.update(limits_y='{} {}'.format(np.min(X_train), np.max(X_train)))
         self._config.update(limits_y='{} {}'.format(-0.5, self.binning_X.n_bins - 0.5))
         
         self._config.update(branch_x='y')
         self._config.update(number_bins=self.binning_y.n_bins)
         self._config.update(max_number_bins=self.binning_y.n_bins)
-        #self._config.update(limits_x='{} {}'.format(np.percentile(y_train, 1), np.percentile(y_train, 99)))
         self._config.update(limits_x='{} {}'.format(-0.5, self.binning_y.n_bins - 0.5))
         self.is_fitted = True
     
@@ -175,7 +180,6 @@ class TRUEEUnfolding(UnfoldingBase):
         file_dt = 'temp_truee_test.root'
         self.path_dt = os.path.join(self.tempdir, file_dt)
         df_test = pd.DataFrame(np.column_stack((X_digit, np.zeros(len(X_digit)))), columns=['x', 'y'])
-        # df_test = pd.DataFrame(np.column_stack((X, np.zeros(len(X)))), columns=['x', 'y'])
         rp.to_root(df_test, self.path_dt, 'data')
         
         self._config.update(roottree_data='data')
