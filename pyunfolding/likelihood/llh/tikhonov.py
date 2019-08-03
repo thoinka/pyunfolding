@@ -162,7 +162,7 @@ class TikhonovLog(LikelihoodTerm):
             f = np.diag(model.acceptance) @ f
         if (f < 0.0).any():
             return np.finfo('float').max
-        logf = np.log(f[self.sel] + self.epsilon)
+        logf = np.log(f + self.epsilon)
         return logf.T @ self.CT_C @ logf * 0.5
 
     def grad(self, model, f, g):
@@ -172,7 +172,7 @@ class TikhonovLog(LikelihoodTerm):
             f = np.diag(model.acceptance) @ f
         if (f < 0.0).any():
             return np.ones(len(f))
-        return self.CT_C @ np.log(f[self.sel]) / f[self.sel]
+        return self.CT_C @ np.log(f) / f
 
     def hess(self, model, f, g):
         if not self.initialized:
@@ -182,5 +182,5 @@ class TikhonovLog(LikelihoodTerm):
         if (f < 0.0).any():
             return np.zeros((len(f), len(f)))
         G = self.CT_C
-        return -0.5 * (np.diag((G.T + G) @ np.log(f[self.sel]))
-                       - (G.T + G)) / (f[self.sel] * f[self.sel].reshape(-1,1))
+        return -0.5 * (np.diag((G.T + G) @ np.log(f))
+                       - (G.T + G)) / (f * f.reshape(-1,1))
