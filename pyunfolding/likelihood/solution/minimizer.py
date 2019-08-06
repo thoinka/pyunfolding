@@ -40,8 +40,9 @@ class Minimizer(SolutionBase):
         g = self.likelihood.model.predict_g(X)
 
         def F(p): return self.likelihood(p, g)
-        if method in __gd_minimizer__:
-            def G(p): return self.likelihood.grad(p, g)
+        def G(p): return self.likelihood.grad(p, g)
+        def H(p): return self.likelihood.hess(p, g)
+        if method in __gd_minimizer__:     
             if method == 'adam':
                 _minimizer = minimization.adam_minimizer
             elif method == 'momentum':
@@ -51,19 +52,19 @@ class Minimizer(SolutionBase):
             elif method == 'adadelta':
                 _minimizer = minimization.adadelta_minimizer
             result = _minimizer(F, G, x0, **kwargs)
-            Hinv = np.linalg.pinv(self.likelihood.hess(result.x, g))
+            Hinv = np.linalg.pinv(H(result.x))
             error = np.sqrt(Hinv.diagonal())
         else:
             params = {}
             if method is None:
                 method = 'bfgs'
             if __scipy_minimizer_opt__[method.lower()]['grad']:
-                params.update(jac=lambda p: self.likelihood.grad(p, g))
+                params.update(jac=G)
             if __scipy_minimizer_opt__[method.lower()]['hess']:
-                params.update(jac=lambda p: self.likelihood.hess(p, g))
-            result = minimize(F, x0=x0, **kwargs)
+                params.update(hess=H)
+            result = minimize(F, x0=x0, method=method, **params, **kwargs)
             try:
-                Hinv = np.linalg.pinv(self.likelihood.hess(result.x, g))
+                Hinv = np.linalg.pinv(H(result.x))
                 error = np.sqrt(Hinv.diagonal())
             except:
                 print('Analytical Hessian unavailable, will use numerical Hessian instead.')
@@ -76,9 +77,13 @@ class Minimizer(SolutionBase):
                 else:
                     print('No estimate for Hessian available.')
                     error = np.nan
+            try:
+                jac = result.jac
+            except:
+                jac = G(result.x)
         return UnfoldingResult(f=result.x,
                                f_err=np.vstack((error, error)),
                                success=result.success,
                                fun=result.fun,
-                               jac=result.jac,
+                               jac=jac,
                                cov=Hinv)

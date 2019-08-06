@@ -5,7 +5,8 @@ from ...utils import UnfoldingResult
 
 class NewtonMinimizer(SolutionBase):
 
-    def solve(self, x0, X, max_iter=100, tol=1e-6, beta=0.5, *args, **kwargs):
+    def solve(self, x0, X, max_iter=100, tol=1e-6, beta=1.0,
+              gamma=0.5, *args, **kwargs):
         g = self.likelihood.model.binning_X.histogram(X)
 
         def F(p): return self.likelihood(p, g)
@@ -24,15 +25,15 @@ class NewtonMinimizer(SolutionBase):
                 success = True
                 break
             x_new = x[-1] - alpha * \
-                np.dot(np.linalg.pinv(hess + 1e-8 * np.eye(len(hess))), grad)
+                np.dot(np.linalg.pinv(hess + beta * np.eye(len(hess))), grad)
             f_new = F(x_new)
 
             if f_new < f[-1]:
                 x.append(x_new)
                 f.append(f_new)
-                alpha = 1.0
+                beta *= gamma
             else:
-                alpha *= beta
+                beta *= 1.0 / gamma
         cov = np.linalg.pinv(H(x[-1]))
         grad = G(x[-1])
         std = np.sqrt(cov.diagonal())
