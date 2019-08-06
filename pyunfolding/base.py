@@ -27,6 +27,17 @@ class UnfoldingBase:
         g : numpy.array, shape=(n_bins_X,)
             Observable vector
         '''
+        if X.ndim == 1:
+            X = np.array(X).reshape(-1, 1)
+
+        if not self.is_fitted:
+            raise RuntimeError('Unfolding must be fitted first.')
+        
+        if self.n_dim != X.shape[1]:
+            raise ValueError('Array must have same shape as training data.')
+
+        X = check_array(X)
+        
         if self.is_fitted:
             return self.model.binning_X.histogram(X, weights=weights)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
@@ -45,6 +56,8 @@ class UnfoldingBase:
         f : numpy.array, shape=(n_bins_X,)
              Result vector.
         '''
+        y = np.array(y)
+
         if self.is_fitted:
             return self.model.binning_y.histogram(y, weights=weights)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
