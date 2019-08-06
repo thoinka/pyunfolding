@@ -97,11 +97,7 @@ if __name__ == '__main__':
                                 likelihood=[pu.likelihood.llh.Poisson(),
                                             pu.likelihood.llh.Tikhonov(4e-4)])
     llh_unfolding.fit(x_train, y_train)
-    result_llh = llh_unfolding.predict(x_test, solver_method='minimizer')
-    result_llh = llh_unfolding.predict(x_test, result_llh.f,
-                                       solver_method='newton')
-    result_llh = llh_unfolding.predict(x_test, result_llh.f,
-                                       solver_method='mcmc')
+    result_llh = llh_unfolding.predict(x_test, mcmc=True)
 
     result_llh.plot(truth=f_true)
     plt.savefig('llh_unfolding_result.pdf')

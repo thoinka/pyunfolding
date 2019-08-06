@@ -38,8 +38,9 @@ class MCMC(SolutionBase):
               verbose=True,
               pass_samples=True,
               burnin=10000,
-              error_method="central",
-              value_method="median"):
+              step_size_init=1.0,
+              error_method="shortest",
+              value_method="best"):
         """Solving Routine.
         
         Parameters
@@ -76,7 +77,7 @@ class MCMC(SolutionBase):
         """
         g = self.likelihood.model.binning_X.histogram(X)
 
-        scale = 1.0
+        scale = step_size_init
         i = 0
         while True:
             if verbose:

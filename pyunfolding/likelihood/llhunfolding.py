@@ -57,37 +57,67 @@ class LLHUnfolding(UnfoldingBase):
         self.is_fitted = True
         self.n_bins_y = self.model.binning_y.n_bins
         self.n_bins_X = self.model.binning_X.n_bins
-        
-    def predict(self, X, x0=None, solver_method='minimizer', **kwargs):
+    
+    def predict(self,
+                X,
+                x0=None,
+                minimizer=True,
+                method='trust-exact',
+                minimizer_options={},
+                mcmc=False,
+                mcmc_options={}):
         '''Calculates an estimate for the unfolding by maximizing the likelihood function (or minimizing the log-likelihood).
 
         Parameters
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
-        x0 : numpy.array, shape=(n_bins_y)
+        x0 : None or numpy.array, shape=(n_bins_y)
             Initial value for the unfolding.
-        solver_method : str
-            Method for maxmizing the likelihood and estimating error contours.
-            Supported values:
-            * `minimizer`: Uses `scipy.optimize.minimize` to minimize the
-                           negative log-likelihood. See the documentation of
-                           `scipy.optimize.minimize` for further information
-                           on possible parameters.
-            * `newton`: Uses the newtons method to minimize the negative
-                        log-likelihood.
-            * `mcmc`: Uses a Markov Chain Monte Carlo approach to estimate the
-                      minimum and error contours of the negative
-                      log-likelihood.
-        kwargs : dict
-            Keywords for the solver.
+        minimizer : bool, default=True
+            Whether to use a minimizer
+        method : str
+            Which minimization algorithm to employ. Options are:
+            * `nelder-mead (from `scipy.optimize.minimize`)
+            * `powell` (from `scipy.optimize.minimize`) 
+            * `cg` (from `scipy.optimize.minimize`) 
+            * `bfgs` (from `scipy.optimize.minimize`) 
+            * `newton-cg` (from `scipy.optimize.minimize`) 
+            * `dogleg` (from `scipy.optimize.minimize`) 
+            * `trust-ncg` (from `scipy.optimize.minimize`) 
+            * `trust-krylov` (from `scipy.optimize.minimize`) 
+            * `trust-exact` (from `scipy.optimize.minimize`) 
+            * `l-bfgs-g` (from `scipy.optimize.minimize`) 
+            * `tnc` (from `scipy.optimize.minimize`) 
+            * `cobyla` (from `scipy.optimize.minimize`) 
+            * `slsqp` (from `scipy.optimize.minimize`) 
+            * `trust-const` (from `scipy.optimize.minimize`) 
+            * `adam` (from `pyunfolding.utils.minimization`)
+            * `adadelta` (from `pyunfolding.utils.minimization`)
+            * `momentum` (from `pyunfolding.utils.minimization`)
+            * `rmsprop` (from `pyunfolding.utils.minimization`)
+        minimizer_options : dict
+            additional options for the minimizer, see scipy.optimize.minimize
+            for more information.
+        mcmc : bool, default=False
+            Whether to use a MCMC to estimate uncertainties.
+        mcmc_options : dict
+            additional options for the MCMC, see
+            pyunfolding.likelihood.solution.mcmc` for more information
         '''
         X = super(LLHUnfolding, self).predict(X)
         if self.is_fitted:
             if x0 is None:
                 x0 = len(X) * np.ones(self.n_bins_y) / self.n_bins_y
-            result = self.llh.solve(x0, X, solver_method=solver_method,
-                                    **kwargs)
+            if minimizer:
+                result = self.llh.solve(x0, X, solver_method='minimizer',
+                                        **minimizer_options)
+                smear = np.random.multivariate_normal(np.zeros(self.n_bins_y),
+                                                      result.cov)
+                x0 = result.f + smear
+            if mcmc:
+                result = self.llh.solve(x0, X, solver_method='mcmc',
+                                        **mcmc_options)
             result.update(binning_y=self.model.binning_y)
             return result
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
