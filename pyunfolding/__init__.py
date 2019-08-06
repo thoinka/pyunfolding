@@ -9,6 +9,7 @@ from .svd import SVDUnfolding
 from .dsea import DSEAUnfolding
 from .analytical import AnalyticalUnfolding
 from .truee import TRUEEUnfolding
+from . import datasets
 
 
 __all__ = ["binning",
@@ -21,4 +22,5 @@ __all__ = ["binning",
            "SVDUnfolding",
            "DSEAUnfolding",
            'AnalyticalUnfolding',
-           'TRUEEUnfolding']
+           'TRUEEUnfolding',
+           'datasets']
