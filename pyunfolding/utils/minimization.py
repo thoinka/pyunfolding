@@ -27,6 +27,53 @@ class MinimizationResult:
         return s
 
 
+def newton_minimizer(fun,
+                     grad,
+                     hess,
+                     x0,
+                     max_iter=1000,
+                     tol=1e-8,
+                     alpha=1e-3,
+                     lr=1.0):
+    """Newton Minimizer.
+
+    Parameters
+    ----------
+    fun : function
+        Function to be minimized.
+    grad : function
+        Jacobian of the fun.
+    hess : function
+        Hessian of the function.
+    x0 : float or numpy.array
+        Start values
+    max_iter : int, optional
+        Maximum number of iterations.
+    tol : float
+        Relative tolerance.
+    alpha : float
+        Regularization factor.
+    lr : float
+        Learning rate.
+    """
+    x = [x0]
+    if grad is None:
+        def grad(x): return num_gradient(fun, x)
+
+    if hess is None:
+        def hess(x): return num_gradient(grad, x)
+
+    for i in range(max_iter):
+        g = grad(x[-1])
+        H = hess(x[-1])
+        x += [x[-1] - lr * np.linalg.pinv(H + alpha * np.eye(len(H))) @ g]
+        if np.linalg.norm(g) < tol:
+            return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
+                                      n_iter=i, success=True)
+    return MinimizationResult(x=x[-1], fun=fun(x[-1]), jac=grad(x[-1]),
+                              n_iter=max_iter, success=False)
+
+
 def momentum_minimizer(fun,
                        grad,
                        x0,

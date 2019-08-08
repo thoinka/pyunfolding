@@ -114,6 +114,7 @@ class LLHUnfolding(UnfoldingBase):
 
             if minimizer:
                 result = self.llh.solve(x0, X, solver_method='minimizer',
+                                        method=method,
                                         **minimizer_options)
                 smear = np.random.multivariate_normal(np.zeros(self.n_bins_y),
                                                       result.cov)

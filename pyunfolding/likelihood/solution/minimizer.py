@@ -1,12 +1,12 @@
 import numpy as np
 from scipy.optimize import minimize
-from ...utils import UnfoldingResult, minimization
+from ...utils import UnfoldingResult, minimization as mini
 from .base import SolutionBase
 
 
 # List of available scipy optimizers and whether or not they
 # support gradient or hessian information.
-__scipy_minimizer_opt__ = {
+__scipy_minimizer__ = {
     'nelder-mead':  {'grad': False, 'hess': False},
     'powell':       {'grad': False, 'hess': False},
     'cg':           {'grad': True,  'hess': False},
@@ -25,10 +25,11 @@ __scipy_minimizer_opt__ = {
 
 # List of available gradient descent optimizers from this module
 __gd_minimizer__ = {
-    'adam':      minimization.adam_minimizer,
-    'momentum':  minimization.momentum_minimizer,
-    'rmsprop':   minimization.rmsprop_minimizer,
-    'adadelta':  minimization.adadelta_minimizer
+    'adam':     {'call': mini.adam_minimizer,     'grad': True, 'hess': False},
+    'momentum': {'call': mini.momentum_minimizer, 'grad': True, 'hess': False},
+    'rmsprop':  {'call': mini.rmsprop_minimizer,  'grad': True, 'hess': False},
+    'adadelta': {'call': mini.adadelta_minimizer, 'grad': True, 'hess': False},
+    'newton':   {'call': mini.newton_minimizer,   'grad': True, 'hess': True},
 }
 
 
@@ -43,18 +44,28 @@ class Minimizer(SolutionBase):
         def F(p): return self.likelihood(p, g)
         def G(p): return self.likelihood.grad(p, g)
         def H(p): return self.likelihood.hess(p, g)
-        if method in __gd_minimizer__.keys():     
-            _minimizer = __gd_minimizer__[method.lower()]
-            result = _minimizer(F, G, x0, **kwargs)
+
+        is_gd = method.lower() in __gd_minimizer__.keys()
+        is_scipy = method.lower() in __scipy_minimizer__.keys()
+
+        if is_gd:  
+            _minimizer = __gd_minimizer__[method.lower()]['call']
+            params = {}
+            if __gd_minimizer__[method.lower()]['grad']:
+                params['grad'] = G
+            if __gd_minimizer__[method.lower()]['hess']:
+                params['hess'] = H
+            result = _minimizer(F, x0=x0, **params, **kwargs)
             Hinv = np.linalg.pinv(H(result.x))
             error = np.sqrt(Hinv.diagonal())
-        else:
+
+        elif is_scipy:
             params = {}
             if method is None:
                 method = 'bfgs'
-            if __scipy_minimizer_opt__[method.lower()]['grad']:
+            if __scipy_minimizer__[method.lower()]['grad']:
                 params.update(jac=G)
-            if __scipy_minimizer_opt__[method.lower()]['hess']:
+            if __scipy_minimizer__[method.lower()]['hess']:
                 params.update(hess=H)
             result = minimize(F, x0=x0, method=method, **params, **kwargs)
             try:
@@ -71,10 +82,14 @@ class Minimizer(SolutionBase):
                 else:
                     print('No estimate for Hessian available.')
                     error = np.nan
-            try:
-                jac = result.jac
-            except:
-                jac = G(result.x)
+
+        else:
+            raise NotImplementedError(
+                      'Method {} is not available'.format(method))
+        try:
+            jac = result.jac
+        except:
+            jac = G(result.x)
         return UnfoldingResult(f=result.x,
                                f_err=np.vstack((error, error)),
                                success=result.success,
