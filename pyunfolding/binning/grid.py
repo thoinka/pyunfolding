@@ -36,7 +36,8 @@ class GridBinning(Binning):
                             np.percentile(f, self.pmax), self.bins - 1)
                          for f in X.T]
         if type(self.bins[0]) == int:
-            self.bins = [np.linspace(np.min(f), np.max(f), n)
+            self.bins = [np.linspace(np.percentile(f, self.pmin),
+                                     np.percentile(f, self.pmax), n)
                          for f, n in zip(X.T, self.bins)]
         for i in range(len(self.bins)):
             self.bins[i][-1] += np.finfo("float64").resolution

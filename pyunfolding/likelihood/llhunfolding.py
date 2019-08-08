@@ -109,14 +109,23 @@ class LLHUnfolding(UnfoldingBase):
         if self.is_fitted:
             if x0 is None:
                 x0 = len(X) * np.ones(self.n_bins_y) / self.n_bins_y
+
+            step_size_init = None
+
             if minimizer:
                 result = self.llh.solve(x0, X, solver_method='minimizer',
                                         **minimizer_options)
                 smear = np.random.multivariate_normal(np.zeros(self.n_bins_y),
                                                       result.cov)
                 x0 = result.f + smear
+                step_size_init = np.mean(np.sqrt(result.cov.diagonal())) / 4.0
             if mcmc:
+                try:
+                    step_size_init = mcmc_options['step_size_init']
+                except:
+                    pass
                 result = self.llh.solve(x0, X, solver_method='mcmc',
+                                        step_size_init=step_size_init,
                                         **mcmc_options)
             result.update(binning_y=self.model.binning_y)
             return result

@@ -1,6 +1,6 @@
 import numpy as np
 from .base import LikelihoodTerm
-from ...utils import diff1_matrix, diff2_matrix
+from ...utils import diff0_matrix, diff1_matrix, diff2_matrix
 
 
 class Tikhonov(LikelihoodTerm):
@@ -60,6 +60,8 @@ class Tikhonov(LikelihoodTerm):
             self.C = diff1_matrix(n, padding)
         elif self.c_name == 'diff2':
             self.C = diff2_matrix(n, padding)
+        elif self.c_name == 'diff0':
+            self.C = diff0_matrix(n, padding)
 
         tau_vec = self.tau * np.ones(n)
         self.CT_C = np.diag(tau_vec) @ self.C.T @ self.C
@@ -150,6 +152,8 @@ class TikhonovLog(LikelihoodTerm):
             self.C = diff1_matrix(n, padding)
         elif self.c_name == 'diff2':
             self.C = diff2_matrix(n, padding)
+        elif self.c_name == 'diff0':
+            self.C = diff0_matrix(n, padding)
 
         tau_vec = self.tau * np.ones(n)
         self.CT_C = np.diag(tau_vec) @ self.C.T @ self.C

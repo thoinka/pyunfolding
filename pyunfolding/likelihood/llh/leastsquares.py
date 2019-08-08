@@ -27,8 +27,8 @@ class WeightedLeastSquares(LikelihoodTerm):
     """
     formula = r"\frac{1}{2}(\mathbf{g} - \mathrm{A}\mathbf{f})^\top (\mathbf{g} - \mathrm{A}\mathbf{f})"
 
-    def __init__(self, epsilon=1):
-        self.epsilon = 1
+    def __init__(self, epsilon=1.0):
+        self.epsilon = epsilon
 
     def func(self, model, f, g):
         g_est = model.predict(f)

@@ -14,6 +14,12 @@ def diff1_matrix(n, padding=0):
     return np.pad(M, padding, mode='constant')
 
 
+def diff0_matrix(n, padding=0):
+    n_ = n - padding
+    M = np.eye(n_)
+    return np.pad(M, padding, mode='constant')
+
+
 def check_symmetry(A, rtol=1e-05, atol=1e-08):
     return np.allclose(A, A.T, rtol=rtol, atol=atol)
 

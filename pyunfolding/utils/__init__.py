@@ -2,7 +2,7 @@ from .console import in_ipython_frontend
 from .uncertainties import error_central, error_shortest, error_best, error_feldman_cousins, Posterior, cov2corr
 from .unfoldingresult import UnfoldingResult
 from .bootstrapper import Bootstrapper
-from .matrices import diff1_matrix, diff2_matrix, check_symmetry, check_posdef
+from .matrices import diff0_matrix, diff1_matrix, diff2_matrix, check_symmetry, check_posdef
 from .binning import calc_bmids, calc_bdiff
 from .minimization import num_gradient
 from .analytical import analytical_solution

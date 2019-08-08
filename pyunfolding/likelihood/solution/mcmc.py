@@ -84,7 +84,8 @@ class MCMC(SolutionBase):
                 print("Burnin Attempt %i" % i)
             x, f, acc = self._steps(x0, g, scale, 1000, verbose=False)
             x0 = x[np.argmin(f)]
-            print("Acceptance rate: {}".format(acc))
+            if verbose:
+                print("Acceptance rate: {}".format(acc))
             if acc > 0.5:
                 scale *= 1.5
             elif acc < 0.15:

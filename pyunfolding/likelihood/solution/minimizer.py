@@ -4,13 +4,6 @@ from ...utils import UnfoldingResult, minimization
 from .base import SolutionBase
 
 
-__gd_minimizer__ = [
-    'adam',
-    'adadelta',
-    'momentum',
-    'rmsprop'
-]
-
 # List of available scipy optimizers and whether or not they
 # support gradient or hessian information.
 __scipy_minimizer_opt__ = {
@@ -30,6 +23,14 @@ __scipy_minimizer_opt__ = {
     'trust-constr': {'grad': True,  'hess': True },
 }
 
+# List of available gradient descent optimizers from this module
+__gd_minimizer__ = {
+    'adam':      minimization.adam_minimizer,
+    'momentum':  minimization.momentum_minimizer,
+    'rmsprop':   minimization.rmsprop_minimizer,
+    'adadelta':  minimization.adadelta_minimizer
+}
+
 
 class Minimizer(SolutionBase):
 
@@ -42,15 +43,8 @@ class Minimizer(SolutionBase):
         def F(p): return self.likelihood(p, g)
         def G(p): return self.likelihood.grad(p, g)
         def H(p): return self.likelihood.hess(p, g)
-        if method in __gd_minimizer__:     
-            if method == 'adam':
-                _minimizer = minimization.adam_minimizer
-            elif method == 'momentum':
-                _minimizer = minimization.momentum_minimizer
-            elif method == 'rmsprop':
-                _minimizer = minimization.rmsprop_minimizer
-            elif method == 'adadelta':
-                _minimizer = minimization.adadelta_minimizer
+        if method in __gd_minimizer__.keys():     
+            _minimizer = __gd_minimizer__[method.lower()]
             result = _minimizer(F, G, x0, **kwargs)
             Hinv = np.linalg.pinv(H(result.x))
             error = np.sqrt(Hinv.diagonal())
