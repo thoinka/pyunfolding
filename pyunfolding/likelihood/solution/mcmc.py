@@ -5,6 +5,7 @@ from ...utils import error_central, error_shortest, error_best
 from ...utils import UnfoldingResult
 from ...utils import Posterior
 from .base import SolutionBase
+from joblib import Parallel, delayed
 
 
 class MCMC(SolutionBase):
@@ -31,21 +32,38 @@ class MCMC(SolutionBase):
             	f[i] = f[i - 1]
         return x, f, acc / float(n_steps)
 
+
+    def _perform_mcmc(self,
+                      x0,
+                      g,
+                      scale,
+                      n_steps,
+                      verbose,
+                      n_burnin):
+        x, fvals, acc = self._steps(x0, g, scale, n_burnin, verbose=False)
+        x, fvals, acc = self._steps(x[-1], g, scale, n_steps, verbose)
+
+        if verbose:
+            print("Acceptance rate: {}".format(acc))
+
+        return {'x': x, 'f': fvals}
+
     def solve(self,
               x0,
               X,
               n_steps=100000,
               verbose=True,
               pass_samples=True,
-              burnin=10000,
+              n_burnin=10000,
               step_size_init=1.0,
+              n_jobs=None,
               error_method="shortest",
               value_method="best"):
         """Solving Routine.
         
         Parameters
         ----------
-        x0 : numpy array, shape=(len(f),)
+        x0 : numpy array, shape=(len(f), n_jobs)
             Initial value for minimization.
         X : numpy array, shape=(n_samples,n_obs)
             Measured observables.
@@ -55,39 +73,48 @@ class MCMC(SolutionBase):
             Whether or not to use verbose mode.
         pass_samples : bool, optional, default=True
             Whether or not to pass the samples generated.
-        burnin : int, optional, default=10000
+        n_burnin : int, optional, default=10000
             Number of samples to withdraw as burn-in.
         error_method : str, optional, default="central"
             Method to calculate errorbars, options:
-            	* `central`: Central interval, defined by the quantiles 15% and
-            	             85%
-            	* `shortest`: Shortest interval containing 68% of the samples.
-            	* `best`: Shortest interval containing 68% of the samples.
-            	* `std`: Interval spanned by the standard deviation.
+                * `central`: Central interval, defined by the quantiles 15% and
+                             85%
+                * `shortest`: Shortest interval containing 68% of the samples.
+                * `best`: Shortest interval containing 68% of the samples.
+                * `std`: Interval spanned by the standard deviation.
         value_method : str, optional, default="median"
             Method to calculate the value
-            	* `median`: Use the median of the samples.
-            	* `best`: Use the best fit among the samples.
-            	* `mean`: Use the mean of the samples.
+                * `median`: Use the median of the samples.
+                * `best`: Use the best fit among the samples.
+                * `mean`: Use the mean of the samples.
         
         Returns
         -------
         result : SolverResult object
             The result of the solution.
         """
+        if x0.ndim == 1:
+            n_jobs = 1
+        else:
+            n_jobs = x0.shape[0]
         g = self.likelihood.model.binning_X.histogram(X)
 
+        n_steps_per_job = [n_steps // n_jobs] * (n_jobs - 1)
+        n_steps_per_job.append(n_steps - sum(n_steps_per_job))
+
         scale = step_size_init
+
         i = 0
+        x0_n_burnin = x0[0,:]
         while True:
             if verbose:
                 print("Burnin Attempt %i" % i)
-            x, f, acc = self._steps(x0, g, scale, 1000, verbose=False)
-            x0 = x[np.argmin(f)]
+            x, f, acc = self._steps(x0_n_burnin, g, scale, 1000, verbose=False)
+            x0_n_burnin = x[-1]
             if verbose:
                 print("Acceptance rate: {}".format(acc))
             if acc > 0.5:
-                scale *= 1.5
+                scale *= 1.333
             elif acc < 0.15:
                 scale *= 0.75
             else:
@@ -95,16 +122,25 @@ class MCMC(SolutionBase):
             i += 1
             if i > 50:
                 if verbose:
-                    print("Maximum number of burnin attempts unsuccessful... Aborting. %f" % scale)
+                    print("Maximum number of n_burnin attempts unsuccessful... Aborting. %f" % scale)
                 break
+        
+        ppdfs = Parallel(n_jobs=n_jobs)([
+            delayed(self._perform_mcmc)(
+                    x0[i,:],
+                    g,
+                    scale,
+                    n_steps_per_job[i],
+                    verbose,
+                    n_burnin
+                ) for i in range(n_jobs)
+        ])
 
-        x, fvals, acc = self._steps(x0, g, scale, burnin, verbose=False)
-        x, fvals, acc = self._steps(x[np.argmin(f)], g, scale, n_steps, verbose)
+        x = np.concatenate([p['x'] for p in ppdfs])
+        f = np.concatenate([p['f'] for p in ppdfs])
 
-        if verbose:
-        	print("Acceptance rate: {}".format(acc))
+        ppdf = Posterior(x, f)
 
-        ppdf = Posterior(x, fvals)
         value = ppdf.value(value_method)
         lower, upper = ppdf.error(error_method, best_fit=ppdf.value('best'))
 

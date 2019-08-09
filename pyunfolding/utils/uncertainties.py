@@ -71,9 +71,13 @@ class Posterior:
     def __init__(self, X, F=None):
         if F is not None:
             assert len(X) == len(F)
+        self.len = len(X)
         self.X = X
         self.F = F
         self.n_samples, self.n_dim = X.shape
+
+    def __len__(self):
+        return self.len
         
     def error(self, method='central', best_fit=None, p=ONE_SIGMA):
         '''Calculates error from given sample.

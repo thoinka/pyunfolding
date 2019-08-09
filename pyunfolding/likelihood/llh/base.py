@@ -62,8 +62,6 @@ class Likelihood:
             self.solution = solution.MCMC(self)
         elif solver_method == 'minimizer':
             self.solution = solution.Minimizer(self)
-        elif solver_method == 'newton':
-            self.solution = solution.NewtonMinimizer(self)
         else:
             raise NotImplementedError('Method not supported {}'.format(method))
         return self.solution.solve(f0, X, **kwargs)

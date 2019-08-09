@@ -36,8 +36,8 @@ def analytical_solution(A, g, tau=0.0, Sigma=None, C_matrix=None):
                        + tau * C_matrix.T @ C_matrix) @ A.T @ iSigma
 
     f_est = B @ g
-    cov = np.linalg.pinv(A.T @ iSigma @ A + tau * C_matrix.T @ C_matrix)
-    # cov = B @ np.diag(g) @ B.T
+    # cov = np.linalg.pinv(A.T @ iSigma @ A + tau * C_matrix.T @ C_matrix)
+    cov = B @ np.diag(g) @ B.T
     f_err = np.sqrt(np.vstack([cov.diagonal(), cov.diagonal()]))
 
     return UnfoldingResult(f=f_est, f_err=f_err, cov=cov, success=True)
