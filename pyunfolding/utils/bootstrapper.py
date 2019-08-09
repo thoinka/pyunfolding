@@ -25,6 +25,7 @@ class Bootstrapper:
     def __init__(self, unfolding, n_bootstraps=100):
         self.unfolding = unfolding
         self.n_bootstraps = n_bootstraps
+        self.is_fitted = False
 
     def g(self, X, weights=None):
         '''Returns an observable vector :math:`\mathbf{g}` given a sample
@@ -79,6 +80,7 @@ class Bootstrapper:
             Additional keywords for the fit routine.
         '''
         self.unfolding.fit(X_train, y_train, *args, **kwargs)
+        self.is_fitted = True
     
     def predict(self, X,
                 error_method='central',

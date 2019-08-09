@@ -1,17 +1,19 @@
 from ..model import Unfolding
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
+from ..utils import num_gradient
 import numpy as np
 
 
-def _ibu(A, g, f0=None, n_iterations=5):
+def _ibu(A, g, f0=None, n_iterations=5, alpha=1.0):
     if f0 is None:
         f_est = [np.ones(A.shape[1]) * np.sum(g) / A.shape[1]]
     else:
         f_est = [f0]
     for _ in range(n_iterations):
         f_est_new = g @ (A * f_est[-1] / (A @ f_est[-1]).reshape(-1,1))
-        f_est.append(f_est_new)
+        df = f_est_new - f_est[-1]
+        f_est.append(f_est[-1] + alpha * df)
     return np.array(f_est)[-1]
 
 
@@ -55,7 +57,7 @@ class BayesianUnfolding(UnfoldingBase):
         self.n_bins_y = self.model.binning_y.n_bins
         self.is_fitted = True
         
-    def predict(self, X, x0=None, n_iterations=5):
+    def predict(self, X, x0=None, n_iterations=5, alpha=1.0, eps=1e-3):
         '''Calculates an estimate for the unfolding.
         Parameters
         ----------
@@ -65,11 +67,22 @@ class BayesianUnfolding(UnfoldingBase):
             Initial value for the unfolding.
         n_iterations : int
             Number of iterations.
+        alpha : float
+            Step size, alpha=1.0 means unaltered iterative bayesian unfolding.
+        eps : float
+            Epsilon used for estimating uncertainties.
         '''
         X = super(BayesianUnfolding, self).predict(X)
-        f = _ibu(self.model.A, self.g(X), f0=x0, n_iterations=n_iterations)
+        g = self.g(X)
+        ibu_func = lambda g_: _ibu(self.model.A, g_,
+                                   f0=x0, n_iterations=n_iterations,
+                                   alpha=alpha)
+        f = ibu_func(g)
+        B = num_gradient(ibu_func, g, eps)
+        cov = B.T @ np.diag(g) @ B
         return UnfoldingResult(f=f,
-                               f_err=np.zeros((2,len(f))),
-                               cov=np.eye(len(f)) * 1e-8,
+                               f_err=np.vstack((np.sqrt(cov.diagonal()),
+                                                np.sqrt(cov.diagonal()))),
+                               cov=cov,
                                success=True,
                                binning_y=self.model.binning_y)
