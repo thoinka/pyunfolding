@@ -1,8 +1,9 @@
 import numpy as np
 from ..utils import UnfoldingResult
+from ..base import UnfoldingBase
 
 
-class DSEAUnfolding:
+class DSEAUnfolding(UnfoldingBase):
     """DSEA Unfolding: Instead of defining an unfolding model, the probability
     :math:`f(i|\mathbf{x})`, i.e. the probability of an event being originally
     from a target variable bin :math:`i` given it's observables
@@ -57,6 +58,8 @@ class DSEAUnfolding:
         f : numpy.array, shape=(n_bins_X,)
              Result vector.
         '''
+        y = np.array(y)
+
         if self.is_fitted:
             return self.binning_y.histogram(y)
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
@@ -73,11 +76,10 @@ class DSEAUnfolding:
         classifier : sklearn.classifier
             An sklearn classifier 
         '''
+        X_train, y_train = super(DSEAUnfolding, self).fit(X_train, y_train)
+
         self.binning_y.fit(y_train)
-        if X_train.ndim == 1:
-            self.X_train = X_train.reshape(-1, 1)
-        else:
-            self.X_train = X_train
+        self.X_train = X_train
         self.f_train = self.binning_y.histogram(y_train)
         self.y_train_int = self.binning_y.digitize(y_train)
         self.labels = np.unique(self.y_train_int)
@@ -103,8 +105,8 @@ class DSEAUnfolding:
         kwargs : dict
             Keywords for the classifier.
         '''
-        if X.ndim == 1:
-            X = X.reshape(-1,1)
+        X = super(DSEAUnfolding, self).predict(X)
+
         if self.is_fitted:
             f = np.zeros(self.binning_y.n_bins)
             if self.weights is None or not warm_start:
@@ -120,7 +122,8 @@ class DSEAUnfolding:
                                                 self.binning_y.n_bins))
                 prediction_training[:, self.labels] = classif.predict_proba(self.X_train)
                 if plus:
-                    f = alpha * np.sum(prediction, axis=0) + f
+                    df = np.sum(prediction, axis=0) - f
+                    f = alpha * df + f
                 else:
                     f = np.sum(prediction, axis=0) 
                 w_new = (f + 1e-8) / (self.f_train + 1e-8)

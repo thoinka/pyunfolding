@@ -11,7 +11,7 @@ def _exponential_cutoff(x, width):
     return np.exp(-x / width)
 
 def _sigmoid_cutoff(x, loc, width):
-    return 1.0 / (1.0 + np.exp(-width * (x - loc)))
+    return 1.0 / (1.0 + np.exp(width * (x - loc)))
 
 
 class SVDUnfolding(UnfoldingBase):

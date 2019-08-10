@@ -24,8 +24,9 @@ def gen_linear(m, n_samples):
     return ((-2.0 + m + np.sqrt(4.0 - 4.0 * m + m ** 2 + 8.0 * m * y))
             / (2.0 * m))
 
+
 def gen_gaussian(loc, scale, n_samples):
-    '''Generates a gaussian spectrum
+    '''Generates a Gaussian spectrum
 
     Parameters
     ----------
@@ -43,3 +44,28 @@ def gen_gaussian(loc, scale, n_samples):
     '''
     a, b = -loc / scale, (1.0 - loc) / scale
     return dist.truncnorm.rvs(a=a, b=b, loc=loc, scale=scale)
+
+
+def gen_powerlaw(alpha, beta, gamma, n_samples):
+    '''Generates a power law spectrum given by (alpha x + beta)^(-gamma)
+
+    Parameters
+    ----------
+    alpha : float
+        scaling factor
+    beta : float
+        offset
+    gamma : float
+        exponent
+    n_samples : int
+        Number of samples.
+
+    Returns
+    -------
+    samples : numpy.array, shape=(n_samples,)
+        Samples.
+    '''
+    y = np.random.rand(n_samples)
+    norm = alpha * (1.0 - gamma) / ((alpha + beta) ** (1 - gamma)
+                                    - beta ** (1.0 - gamma))
+    return ((alpha * (1.0 - gamma) * y / norm + beta ** (1.0 - gamma)) ** (1.0 / (1.0 - gamma)) - beta) / alpha

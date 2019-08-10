@@ -2,29 +2,23 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import pyunfolding as pu
+from pyunfolding.datasets import spectra, observables
 from sklearn.ensemble import RandomForestClassifier
 
 
-def sample_linear(m, n_samples):
-    y = np.random.rand(n_samples)
-    if m == 0.0:
-        return y
-    return (-2.0 + m + np.sqrt(4.0 - 4.0 * m + m ** 2 + 8.0 * m * y)) / (2.0 * m)
-
-
-def create_toydata(y, spread=0.1):
-    x = y + np.random.randn(len(y)) * spread
-    return x
-
-
 if __name__ == '__main__':
-    y_train = sample_linear(0.0, 10000)
-    x_train = create_toydata(y_train)
+    params = {
+        'spread_low':  0.2,
+        'spread_high': 0.1
+    }
 
-    y_test = sample_linear(1.9, 1000)
-    x_test = create_toydata(y_test)
+    y = spectra.gen_linear(0.0, 100000)
+    df_train = observables.gen_gaussian_smearing(y, **params)
 
-    binning_x = pu.binning.GridBinning(100)
+    y = spectra.gen_linear(-1.0, 10000)
+    df_test = observables.gen_gaussian_smearing(y, **params)
+
+    binning_x = pu.binning.GridBinning(20)
     binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99)
 
     # Analytical Unfolding.
@@ -32,10 +26,10 @@ if __name__ == '__main__':
     # likelihood. The regularization is adjusted using using the keyword tau.
     ana_unfolding = pu.AnalyticalUnfolding(binning_x, binning_y,
                                            Sigma='poisson')
-    ana_unfolding.fit(x_train, y_train)
-    result_ana = ana_unfolding.predict(x_test, tau=4e-4)
+    ana_unfolding.fit(df_train.X, df_train.y)
+    result_ana = ana_unfolding.predict(df_test.X, tau=4e-5)
 
-    f_true = ana_unfolding.f(y_test)
+    f_true = ana_unfolding.f(df_test.y)
 
     result_ana.plot(truth=f_true)
     plt.savefig('analytical_unfolding_result.pdf')
@@ -45,8 +39,8 @@ if __name__ == '__main__':
     # singular values in order to avoid oscillations. The shape of the
     # supression function is changed by additional keywords, i.e. width.
     svd_unfolding = pu.SVDUnfolding(binning_x, binning_y)
-    svd_unfolding.fit(x_train, y_train)
-    result_svd = svd_unfolding.predict(x_test, mode='gaussian', width=4.0)
+    svd_unfolding.fit(df_train.X, df_train.y)
+    result_svd = svd_unfolding.predict(df_test.X, mode='gaussian', width=3.0)
 
     result_svd.plot(truth=f_true)
     plt.savefig('svd_unfolding_result.pdf')
@@ -58,23 +52,11 @@ if __name__ == '__main__':
     # n_iterations, the less regularized the unfolding becomes. There's
     # no out-of-the-box error estimation available yet.
     bay_unfolding = pu.BayesianUnfolding(binning_x, binning_y)
-    bay_unfolding.fit(x_train, y_train)
-    result_bay = bay_unfolding.predict(x_test, n_iterations=5)
+    bay_unfolding.fit(df_train.X, df_train.y)
+    result_bay = bay_unfolding.predict(df_test.X, n_iterations=10)
 
     result_bay.plot(truth=f_true)
     plt.savefig('bayesian_unfolding_result.pdf')
-
-    # Bayesian Unfolding in a Bootstrapping Pipeline.
-    # Errors can always be estimated using bootstrapping, which is easily
-    # performed using the Bootstrapper.
-    bay_unfolding = pu.utils.Bootstrapper(
-        pu.BayesianUnfolding(binning_x, binning_y)
-        )
-    bay_unfolding.fit(x_train, y_train)
-    result_bay = bay_unfolding.predict(x_test, n_iterations=5)
-
-    result_bay.plot(truth=f_true)
-    plt.savefig('bayesian_bootstrap_unfolding_result.pdf')
 
     # DSEA Unfolding.
     # Unfolding problem is formulated as a classification problem. A classifier
@@ -82,9 +64,10 @@ if __name__ == '__main__':
     # energy bin i. To shake off the inherent bias in the training data, its
     # weights are updated in similar fashion to iterative bayesian unfolding.
     dsea_unfolding = pu.DSEAUnfolding(binning_y)
-    dsea_unfolding.fit(x_train, y_train, RandomForestClassifier)
-    result_dsea = dsea_unfolding.predict(x_test, min_samples_leaf=20,
-                                         n_iterations=10)
+    dsea_unfolding.fit(df_train.X, df_train.y, RandomForestClassifier)
+    result_dsea = dsea_unfolding.predict(df_test.X,
+                                         min_samples_leaf=20,
+                                         n_iterations=20)
 
     result_dsea.plot(truth=f_true)
     plt.savefig('dsea_unfolding_result.pdf')
@@ -95,9 +78,9 @@ if __name__ == '__main__':
     # sampler that actually returns the posterior pdf.
     llh_unfolding = pu.LLHUnfolding(binning_x, binning_y,
                                 likelihood=[pu.likelihood.llh.Poisson(),
-                                            pu.likelihood.llh.Tikhonov(4e-4)])
-    llh_unfolding.fit(x_train, y_train)
-    result_llh = llh_unfolding.predict(x_test, mcmc=True)
+                                            pu.likelihood.llh.Tikhonov(4e-5)])
+    llh_unfolding.fit(df_train.X, df_train.y)
+    result_llh = llh_unfolding.predict(df_test.X, mcmc=True)
 
     result_llh.plot(truth=f_true)
     plt.savefig('llh_unfolding_result.pdf')
