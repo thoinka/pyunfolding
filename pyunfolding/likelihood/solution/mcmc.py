@@ -57,6 +57,7 @@ class MCMC(SolutionBase):
               n_burnin=10000,
               step_size_init=1.0,
               n_jobs=None,
+              fisher_info=False,
               error_method="shortest",
               value_method="best"):
         """Solving Routine.
@@ -75,6 +76,8 @@ class MCMC(SolutionBase):
             Whether or not to pass the samples generated.
         n_burnin : int, optional, default=10000
             Number of samples to withdraw as burn-in.
+        fisher_info : bool
+            Estimate covariance using the Fisher matrix
         error_method : str, optional, default="central"
             Method to calculate errorbars, options:
                 * `central`: Central interval, defined by the quantiles 15% and
@@ -125,6 +128,7 @@ class MCMC(SolutionBase):
                     print("Maximum number of n_burnin attempts unsuccessful... Aborting. %f" % scale)
                 break
         
+        # Calculate multiple separate mcmcs using joblib
         ppdfs = Parallel(n_jobs=n_jobs)([
             delayed(self._perform_mcmc)(
                     x0[i,:],
@@ -136,6 +140,7 @@ class MCMC(SolutionBase):
                 ) for i in range(n_jobs)
         ])
 
+        # Concatenate results
         x = np.concatenate([p['x'] for p in ppdfs])
         f = np.concatenate([p['f'] for p in ppdfs])
 
@@ -145,11 +150,16 @@ class MCMC(SolutionBase):
         lower, upper = ppdf.error(error_method, best_fit=ppdf.value('best'))
 
         error = np.vstack((value - lower, upper - value))
+    
+        cov = np.cov(x.T)
 
         result = UnfoldingResult(f=value,
                                  f_err=error,
                                  success=True,
-                                 cov=np.cov(x.T))
+                                 cov=cov)
         if pass_samples:
             result.update(sample=ppdf)
+        if fisher_info:
+            fi = np.mean([self.likelihood.hess(x_, g) for x_ in x], axis=0)
+            result.update(fisher_matrix=fi)
         return result
