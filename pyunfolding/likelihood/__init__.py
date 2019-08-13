@@ -1,7 +1,15 @@
 from . import solution
-from . import llh
+from .llh import *
 from .llhunfolding import LLHUnfolding
 
-__all__ = ("llh",
+__all__ = ["Likelihood",
+	       "LikelihoodTerm",
+	       "Poisson",
+           "LeastSquares",
+           "WeightedLeastSquares",
+           "OnlyPositive",
+           "OnlyConcave",
+           "OnlyMonotonic",
+           "Tikhonov",
 	       "solution",
-           "LLHUnfolding")
+           "LLHUnfolding"]

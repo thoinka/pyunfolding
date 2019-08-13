@@ -4,7 +4,32 @@ from .onlypositive import safe_exp
 
 
 class Poisson(LikelihoodTerm):
-    """Poissonian likelihood term as :math:`\sum_i (g np.log(\lmabda(f)) - \lambda(f))`.
+    r"""Poissonian likelihood term as
+
+    .. math::
+        \sum_i (g_i np.log(\lambda(f)_i) - \lambda(f)_i) + b \exp (a \lambda(f)_i)
+
+    Latter term is a regularization term to smooth out the hard edge the
+    unaltered likelihood term hits when negative elements emerge in
+    :math:`\lambda(\mathbf{f})`.
+
+    Parameters
+    ----------
+    epsilon : `float`, optional (default=1e-8)
+        Offset added to :math:`\lambda(f)` in order to avoid numerical problem
+        once it hits very small values. 
+    a, b : `float`, optional (default=1e3)
+        Parameters of the additional regularization term. Set `a` to 0 to
+        remove the term altogether.
+
+    Attributes
+    ----------
+    epsilon : `float`, optional (default=1e-8)
+        Offset added to :math:`\lambda(f)` in order to avoid numerical problem
+        once it hits very small values. 
+    a, b : `float`, optional (default=1e3)
+        Parameters of the additional regularization term. Set `a` to 0 to
+        remove the term altogether.
     """
     formula = r"-\sum_i (g_i \log (\mathrm{A}\mathbf{f})_i - (\mathrm{A}\mathbf{f})_i"
 

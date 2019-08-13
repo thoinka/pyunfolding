@@ -1,16 +1,16 @@
 from .poisson import Poisson
 from .leastsquares import LeastSquares, WeightedLeastSquares
 from .onlypositive import OnlyPositive, OnlyMonotonic, OnlyConcave
-from .tikhonov import Tikhonov, TikhonovLog
+from .tikhonov import Tikhonov
 from .base import LikelihoodTerm, Likelihood
 
 
 __all__ = ("Likelihood",
-	       "LikelihoodTerm"
+	       "LikelihoodTerm",
 	       "Poisson",
            "LeastSquares",
            "WeightedLeastSquares",
            "OnlyPositive",
-           "OnlyConcave"
+           "OnlyConcave",
            "OnlyMonotonic",
            "Tikhonov")

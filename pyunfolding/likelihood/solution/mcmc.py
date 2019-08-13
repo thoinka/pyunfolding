@@ -11,6 +11,15 @@ from warnings import warn
 from ...exceptions import FailedMCMCWarning
 
 
+# Default values for the burnin procedure. These are rather random values, but
+# they turned out to work reasonably well.
+MCMC_BURNIN_MIN_ACC = 0.15
+MCMC_BURNIN_MAX_ACC = 0.40
+MCMC_BURNIN_SCALING = 0.75
+MCMC_BURNIN_NSTEPS = 1000
+MCMC_BURNIN_NATTEMPTS = 50
+
+
 class MCMC(SolutionBase):
 
     def _steps(self, x0, g, scale, n_steps, verbose=False):
@@ -34,7 +43,6 @@ class MCMC(SolutionBase):
             	x[i,:] = x[i - 1,:]
             	f[i] = f[i - 1]
         return x, f, acc / float(n_steps)
-
 
     def _perform_mcmc(self,
                       x0,
@@ -115,18 +123,19 @@ class MCMC(SolutionBase):
         while True:
             if verbose:
                 print("Burnin Attempt %i" % i)
-            x, f, acc = self._steps(x0_n_burnin, g, scale, 1000, verbose=False)
+            x, f, acc = self._steps(x0_n_burnin, g, scale, MCMC_BURNIN_NSTEPS,
+                                    verbose=False)
             x0_n_burnin = x[-1]
             if verbose:
                 print("Acceptance rate: {}".format(acc))
-            if acc > 0.5:
-                scale *= 1.333
-            elif acc < 0.15:
-                scale *= 0.75
+            if acc > MCMC_BURNIN_MAX_ACC:
+                scale *= 1.0 / MCMC_BURNIN_SCALING
+            elif acc < MCMC_BURNIN_MIN_ACC:
+                scale *= MCMC_BURNIN_SCALING
             else:
                 break
             i += 1
-            if i > 50:
+            if i > MCMC_BURNIN_NATTEMPTS:
                 warn(FailedMCMCWarning('Maximum number of burn-in attempts exceeded.'))
                 break
         
