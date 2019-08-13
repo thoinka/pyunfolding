@@ -27,7 +27,7 @@ if __name__ == '__main__':
     ana_unfolding = pu.AnalyticalUnfolding(binning_x, binning_y,
                                            Sigma='poisson')
     ana_unfolding.fit(df_train.X, df_train.y)
-    result_ana = ana_unfolding.predict(df_test.X, tau=4e-5)
+    result_ana = ana_unfolding.predict(df_test.X, tau=4e-6)
 
     f_true = ana_unfolding.f(df_test.y)
 
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     # Regularization is possible using several options. Among them is a MCMC
     # sampler that actually returns the posterior pdf.
     llh_unfolding = pu.LLHUnfolding(binning_x, binning_y,
-                                likelihood=[pu.likelihood.llh.Poisson(),
-                                            pu.likelihood.llh.Tikhonov(4e-5)])
+                                likelihood=[pu.likelihood.Poisson(),
+                                            pu.likelihood.Tikhonov(4e-5)])
     llh_unfolding.fit(df_train.X, df_train.y)
     result_llh = llh_unfolding.predict(df_test.X, mcmc=True)
 
