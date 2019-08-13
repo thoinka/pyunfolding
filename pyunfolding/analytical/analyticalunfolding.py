@@ -102,7 +102,7 @@ class AnalyticalUnfolding(UnfoldingBase):
             c_gen = diff1_matrix
         elif self.C == 'diff2':
             c_gen = diff2_matrix
-        elif self.c_name == 'diff0':
+        elif self.C == 'diff0':
             self.C = diff0_matrix
 
         if self.exclude_edges:

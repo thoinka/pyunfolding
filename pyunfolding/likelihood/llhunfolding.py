@@ -127,7 +127,8 @@ class LLHUnfolding(UnfoldingBase):
                 method='trust-exact',
                 minimizer_options={},
                 mcmc=False,
-                mcmc_options={}):
+                mcmc_options={},
+                random_seed=None):
         '''Calculates an estimate for the unfolding by maximizing the likelihood function (or minimizing the log-likelihood).
 
         Parameters
@@ -219,8 +220,15 @@ class LLHUnfolding(UnfoldingBase):
                 result = self.llh.solve(x0, X, solver_method='minimizer',
                                         method=method,
                                         **minimizer_options)
-                smear = np.random.multivariate_normal(np.zeros(self.n_bins_y),
-                                                      result.cov, size=n_jobs)
+                if random_seed is not None:
+                    mcmc_options['random_seed'] = random_seed
+                else:
+                    random_seed = np.random.randint(np.iinfo('uint32').max)
+
+                rnd = np.random.RandomState(random_seed - 1)
+                
+                smear = rnd.multivariate_normal(np.zeros(self.n_bins_y),
+                                                result.cov, size=n_jobs)
                 x0 = result.f.reshape(1, -1) + smear
                 step_size_init = np.mean(np.sqrt(result.cov.diagonal())) / 4.0
             if mcmc:

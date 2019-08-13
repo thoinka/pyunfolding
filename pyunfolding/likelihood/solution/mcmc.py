@@ -22,7 +22,9 @@ MCMC_BURNIN_NATTEMPTS = 50
 
 class MCMC(SolutionBase):
 
-    def _steps(self, x0, g, scale, n_steps, verbose=False):
+    def _steps(self, x0, g, scale, n_steps, rnd, verbose=False):
+        if n_steps == 0:
+            return x0.reshape(1,-1), np.array(self.likelihood(x0, g)), 0.0
         x = np.zeros((n_steps, len(x0)))
         x[0,:] = x0
         f = np.zeros(n_steps)
@@ -33,9 +35,9 @@ class MCMC(SolutionBase):
         else:
             iterator = range(1, n_steps)
         for i in iterator:
-            x_new = x[i - 1] + np.random.randn(len(x0)) * scale
+            x_new = x[i - 1] + rnd.randn(len(x0)) * scale
             f_new = self.likelihood(x_new, g)
-            if np.log(np.random.rand()) < f[i - 1] - f_new:
+            if np.log(rnd.rand()) < f[i - 1] - f_new:
                 x[i,:] = x_new
                 f[i] = f_new
                 acc += 1
@@ -50,14 +52,16 @@ class MCMC(SolutionBase):
                       scale,
                       n_steps,
                       verbose,
-                      n_burnin):
-        x, fvals, acc = self._steps(x0, g, scale, n_burnin, verbose=False)
-        x, fvals, acc = self._steps(x[-1], g, scale, n_steps, verbose)
+                      n_burnin,
+                      random_seed):
+        rnd = np.random.RandomState(random_seed)
+        x, fvals, acc = self._steps(x0, g, scale, n_burnin, rnd, False)
+        x, fvals, acc = self._steps(x[-1], g, scale, n_steps, rnd, verbose)
 
         if verbose:
             print("Acceptance rate: {}".format(acc))
 
-        return {'x': x, 'f': fvals}
+        return {'x': x, 'f': fvals, 'acc': acc}
 
     def solve(self,
               x0,
@@ -70,7 +74,8 @@ class MCMC(SolutionBase):
               n_jobs=None,
               fisher_info=False,
               error_method="shortest",
-              value_method="best"):
+              value_method="best",
+              random_seed=None):
         """Solving Routine.
         
         Parameters
@@ -111,6 +116,10 @@ class MCMC(SolutionBase):
             n_jobs = 1
         else:
             n_jobs = x0.shape[0]
+
+        if random_seed is None:
+            random_seed = np.random.randint(np.iinfo('uint32').max)
+
         g = self.likelihood.model.binning_X.histogram(X)
 
         success = True
@@ -120,13 +129,19 @@ class MCMC(SolutionBase):
 
         scale = step_size_init
 
-        i = 0
+        i_burnin = 0
         x0_n_burnin = x0[0,:]
         while True:
             if verbose:
-                print("Burnin Attempt %i" % i)
-            x, f, acc = self._steps(x0_n_burnin, g, scale, MCMC_BURNIN_NSTEPS,
-                                    verbose=False)
+                print("Burnin Attempt %i" % i_burnin)
+            burnin_sample = self._perform_mcmc(x0_n_burnin,
+                                               g,
+                                               scale,
+                                               MCMC_BURNIN_NSTEPS,
+                                               False,
+                                               0,
+                                               random_seed + i_burnin)
+            x, f, acc = burnin_sample['x'], burnin_sample['f'], burnin_sample['acc']
             x0_n_burnin = x[-1]
             if verbose:
                 print("Acceptance rate: {}".format(acc))
@@ -136,8 +151,8 @@ class MCMC(SolutionBase):
                 scale *= MCMC_BURNIN_SCALING
             else:
                 break
-            i += 1
-            if i > MCMC_BURNIN_NATTEMPTS:
+            i_burnin += 1
+            if i_burnin > MCMC_BURNIN_NATTEMPTS:
                 warn(FailedMCMCWarning('Maximum number of burn-in attempts exceeded.'))
                 success = False
                 error = 'MCMC Burn-in failed after {} attempts. Final acceptance was {}.'.format(MCMC_BURNIN_NATTEMPTS, acc)
@@ -151,7 +166,8 @@ class MCMC(SolutionBase):
                     scale,
                     n_steps_per_job[i],
                     verbose,
-                    n_burnin
+                    n_burnin,
+                    random_seed + i + i_burnin
                 ) for i in range(n_jobs)
         ])
 

@@ -36,23 +36,23 @@ def bin_edges(X):
     return (X_sort[1:] + X_sort[:-1]) * 0.5
 
 
-def equidistant_bins(X, Xmin, Xmax, n_bins):
+def equidistant_bins(X, Xmin, Xmax, n_bins, **kwargs):
     return np.linspace(Xmin, Xmax, n_bins - 1)
 
 
-def equal_bins(X, Xmin, Xmax, n_bins):
+def equal_bins(X, Xmin, Xmax, n_bins, **kwargs):
     bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
     idx = np.linspace(0, len(bin_edges) - 1, n_bins - 1).astype(int)
     return bin_edges[idx]
 
 
-def random_bins(X, Xmin, Xmax, n_bins):
-    rand_edges = np.sort(np.random.uniform(Xmin, Xmax, n_bins - 3))
+def random_bins(X, Xmin, Xmax, n_bins, rnd, **kwargs):
+    rand_edges = np.sort(rnd.uniform(Xmin, Xmax, n_bins - 3))
     return np.r_[Xmin, rand_edges, Xmax]
 
 
-def random_equal_bins(X, Xmin, Xmax, n_bins):
+def random_equal_bins(X, Xmin, Xmax, n_bins, rnd, **kwargs):
     bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
-    idx = np.sort(np.random.choice(len(bin_edges) - 2, n_bins - 3,
+    idx = np.sort(rnd.choice(len(bin_edges) - 2, n_bins - 3,
                                    replace=True) + 1)
     return np.r_[Xmin, bin_edges[idx], Xmax]

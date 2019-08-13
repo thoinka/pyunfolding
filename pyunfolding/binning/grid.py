@@ -39,10 +39,13 @@ class GridBinning(Binning):
             * ``random`` will pick completely random bin edges in between
               `pmin` and `pmax`
             * ``random-equal`` will pick random bin edges according quantiles.
-    pmin, pmax : `float`
+    pmin, pmax : `float` (default=0.0, 1.0)
         Quantile of the lowest and highest bin edge (in percent!)
-    underflow, overflow : `bool`
-        Whether or not to include an over- or underflow bin.
+    underflow, overflow : `bool` (default=True, True)
+        Whether or not to include an over- or underflow bin. As SVDUnfolding
+        and BayesianUnfolding have no way to account for the discontintuity
+        caused by under- and overflow bins in the spectrum, it is recommended
+        to set to `False` for the target variable.
 
     Attributes
     ----------
@@ -68,13 +71,15 @@ class GridBinning(Binning):
                  pmin=0.0,
                  pmax=100.0,
                  underflow=True,
-                 overflow=True):
+                 overflow=True,
+                 random_seed=None):
         super(GridBinning, self).__init__(bins)
         self.pmin = pmin
         self.pmax = pmax
         self.scheme = __binning_schemes__[scheme]
         self.underflow = underflow
         self.overflow = overflow
+        self.RandomState = np.random.RandomState(random_seed)
 
     def fit(self, X, *args, **kwargs):
         super(GridBinning, self).fit(X)
@@ -89,12 +94,14 @@ class GridBinning(Binning):
             self.bins = [self.scheme(f,
                                      np.percentile(f, self.pmin),
                                      np.percentile(f, self.pmax),
-                                     self.bins + add_bins)
+                                     self.bins + add_bins,
+                                     rnd=self.RandomState)
                          for f in X.T]
         if type(self.bins[0]) == int:
             self.bins = [self.scheme(np.percentile(f, self.pmin),
                                      np.percentile(f, self.pmax),
-                                     n + add_bins)
+                                     n + add_bins,
+                                     rnd=self.RandomState)
                          for f, n in zip(X.T, self.bins)]
         for i in range(len(self.bins)):
             self.bins[i][-1] += np.finfo("float64").resolution
