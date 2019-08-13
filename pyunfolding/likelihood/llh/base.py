@@ -4,9 +4,6 @@ from ...utils import num_gradient, in_ipython_frontend
 from IPython.display import Math, display
 
 
-
-
-
 class Likelihood:
     """Base Likelihood Class.
 
@@ -64,7 +61,8 @@ class Likelihood:
             self.solution = solution.Minimizer(self)
         else:
             raise NotImplementedError('Method not supported {}'.format(method))
-        return self.solution.solve(f0, X, **kwargs)
+        result = self.solution.solve(f0, X, **kwargs)
+        return result
 
 
 class LikelihoodTerm:

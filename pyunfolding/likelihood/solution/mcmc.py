@@ -7,6 +7,9 @@ from ...utils import Posterior
 from .base import SolutionBase
 from joblib import Parallel, delayed
 
+from warnings import warn
+from ...exceptions import FailedMCMCWarning
+
 
 class MCMC(SolutionBase):
 
@@ -124,8 +127,7 @@ class MCMC(SolutionBase):
                 break
             i += 1
             if i > 50:
-                if verbose:
-                    print("Maximum number of n_burnin attempts unsuccessful... Aborting. %f" % scale)
+                warn(FailedMCMCWarning('Maximum number of burn-in attempts exceeded.'))
                 break
         
         # Calculate multiple separate mcmcs using joblib

@@ -10,17 +10,19 @@ from .dsea import DSEAUnfolding
 from .analytical import AnalyticalUnfolding
 from .truee import TRUEEUnfolding
 from . import datasets
+from . import exceptions
 
 
-__all__ = ["binning",
-           "model",
-           "likelihood",
-           "plot",
+__all__ = ['binning',
+           'model',
+           'likelihood',
+           'plot',
            'utils',
-           "LLHUnfolding",
-           "BayesianUnfolding",
-           "SVDUnfolding",
-           "DSEAUnfolding",
+           'LLHUnfolding',
+           'BayesianUnfolding',
+           'SVDUnfolding',
+           'DSEAUnfolding',
            'AnalyticalUnfolding',
            'TRUEEUnfolding',
-           'datasets']
+           'datasets',
+           'exceptions']

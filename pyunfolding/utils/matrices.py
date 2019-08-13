@@ -1,5 +1,6 @@
 import numpy as np
-import warnings
+from warnings import warn
+from ..exceptions import InvalidCovarianceWarning
 
 
 def diff2_matrix(n, padding=0):
@@ -30,9 +31,8 @@ def check_posdef(A, atol=1e-14):
 
 def check_covariance(cov):
     if not check_posdef(cov):
-        warnings.warn('Warning: Covariance matrix is not positive-semidefinite!'
-                      ' Do not trust the uncertainty estimation!')
-    if not check_symmetry(cov):
-        warnings.warn('Warning: Covariance matrix is not symmetrical!'
-                      ' Do not trust the uncertainty estimation!')
+        warn(InvalidCovarianceWarning('Covariance not positive semidefinite.'))
 
+    if not check_symmetry(cov):
+        warn(InvalidCovarianceWarning('Covariance not symmetrical.'))
+        

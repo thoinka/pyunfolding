@@ -19,9 +19,14 @@ class UnfoldingResult:
             s = "Successful unfolding:\n"
         else:
             s = "Unsuccessful unfolding:\n"
+        sym_err = np.allclose(self.f_err[0], self.f_err[1])
         for i, (f, ferr1, ferr2) in enumerate(zip(self.f, self.f_err[0], self.f_err[1])):
-            s += "Var {}:\t{:.2f} +{:.2f} -{:.2f}\n".format(i + 1,
-                                                            f, ferr1, ferr2)
+            if sym_err:
+                s += u"Var {}:\t{:.2f}±{:.2f}\n".format(i + 1,
+                                                        f, ferr1)
+            else:
+                s += "Var {}:\t{:.2f} +{:.2f} -{:.2f}\n".format(i + 1, f,
+                                                                ferr1, ferr2)
         try:
             s += "Error-Message: {}".format(self.error)
         except:

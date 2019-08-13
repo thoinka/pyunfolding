@@ -2,7 +2,8 @@ import numpy as np
 from scipy.optimize import minimize
 from ...utils import UnfoldingResult, minimization as mini
 from .base import SolutionBase
-
+from warnings import warn
+from ...exceptions import FailedMinimizationWarning
 
 # List of available scipy optimizers and whether or not they
 # support gradient or hessian information.
@@ -90,6 +91,8 @@ class Minimizer(SolutionBase):
             jac = result.jac
         except:
             jac = G(result.x)
+        if not result.success:
+            warn(FailedMinimizationWarning('Minimization not successful.'))
         return UnfoldingResult(f=result.x,
                                f_err=np.vstack((error, error)),
                                success=result.success,
