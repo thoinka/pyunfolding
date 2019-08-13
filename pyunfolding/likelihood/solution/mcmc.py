@@ -64,7 +64,7 @@ class MCMC(SolutionBase):
               X,
               n_steps=100000,
               verbose=True,
-              pass_samples=True,
+              return_samples=True,
               n_burnin=10000,
               step_size_init=1.0,
               n_jobs=None,
@@ -83,7 +83,7 @@ class MCMC(SolutionBase):
             Number of iterations.
         verbose : bool, optional, default=True
             Whether or not to use verbose mode.
-        pass_samples : bool, optional, default=True
+        return_samples : bool, optional, default=True
             Whether or not to pass the samples generated.
         n_burnin : int, optional, default=10000
             Number of samples to withdraw as burn-in.
@@ -113,6 +113,8 @@ class MCMC(SolutionBase):
             n_jobs = x0.shape[0]
         g = self.likelihood.model.binning_X.histogram(X)
 
+        success = True
+
         n_steps_per_job = [n_steps // n_jobs] * (n_jobs - 1)
         n_steps_per_job.append(n_steps - sum(n_steps_per_job))
 
@@ -137,6 +139,8 @@ class MCMC(SolutionBase):
             i += 1
             if i > MCMC_BURNIN_NATTEMPTS:
                 warn(FailedMCMCWarning('Maximum number of burn-in attempts exceeded.'))
+                success = False
+                error = 'MCMC Burn-in failed after {} attempts. Final acceptance was {}.'.format(MCMC_BURNIN_NATTEMPTS, acc)
                 break
         
         # Calculate multiple separate mcmcs using joblib
@@ -160,16 +164,21 @@ class MCMC(SolutionBase):
         value = ppdf.value(value_method)
         lower, upper = ppdf.error(error_method, best_fit=ppdf.value('best'))
 
-        error = np.vstack((value - lower, upper - value))
+        error = np.vstack((value - lower,
+                           upper - value))
     
         cov = np.cov(x.T)
 
         result = UnfoldingResult(f=value,
                                  f_err=error,
-                                 success=True,
+                                 success=success,
                                  cov=cov)
-        if pass_samples:
+        if return_samples:
             result.update(sample=ppdf)
+        try:
+            result.update(error=error)
+        except:
+            pass
         if fisher_info:
             fi = np.mean([self.likelihood.hess(x_, g) for x_ in x], axis=0)
             result.update(fisher_matrix=fi)

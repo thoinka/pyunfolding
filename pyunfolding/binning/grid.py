@@ -1,44 +1,23 @@
 import numpy as np
 from itertools import product
 from sklearn.tree import DecisionTreeClassifier
-from ..utils import calc_bmids, calc_bdiff
+from ..utils import (calc_bmids,
+                     calc_bdiff,
+                     equidistant_bins,
+                     equal_bins,
+                     random_bins,
+                     random_equal_bins,
+                     digitize_uni)
 from .base import Binning
 
 import warnings
 
 
-def _bin_edges(X):
-    X_sort = np.sort(X)
-    return (X_sort[1:] + X_sort[:-1]) * 0.5
-
-
-def _equidistant_bins(X, Xmin, Xmax, n_bins):
-    return np.linspace(Xmin, Xmax, n_bins - 1)
-
-
-def _equal_bins(X, Xmin, Xmax, n_bins):
-    bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
-    idx = np.linspace(0, len(bin_edges) - 1, n_bins - 1).astype(int)
-    return bin_edges[idx]
-
-
-def _random_bins(X, Xmin, Xmax, n_bins):
-    rand_edges = np.sort(np.random.uniform(Xmin, Xmax, n_bins - 3))
-    return np.r_[Xmin, rand_edges, Xmax]
-
-
-def _random_equal_bins(X, Xmin, Xmax, n_bins):
-    bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
-    idx = np.sort(np.random.choice(len(bin_edges) - 2, n_bins - 3,
-                                   replace=True) + 1)
-    return np.r_[Xmin, bin_edges[idx], Xmax]
-
-
 __binning_schemes__ = {
-    'equidistant': _equidistant_bins,
-    'equal': _equal_bins,
-    'random': _random_bins,
-    'random-equal': _random_equal_bins
+    'equidistant': equidistant_bins,
+    'equal': equal_bins,
+    'random': random_bins,
+    'random-equal': random_equal_bins
 }
 
 
@@ -62,6 +41,8 @@ class GridBinning(Binning):
             * ``random-equal`` will pick random bin edges according quantiles.
     pmin, pmax : `float`
         Quantile of the lowest and highest bin edge (in percent!)
+    underflow, overflow : `bool`
+        Whether or not to include an over- or underflow bin.
 
     Attributes
     ----------
@@ -81,30 +62,48 @@ class GridBinning(Binning):
         extrapolated (and meaningless).
     """
 
-    def __init__(self, bins, scheme='equidistant', pmin=0.0, pmax=100.0):
+    def __init__(self,
+                 bins,
+                 scheme='equidistant',
+                 pmin=0.0,
+                 pmax=100.0,
+                 underflow=True,
+                 overflow=True):
         super(GridBinning, self).__init__(bins)
         self.pmin = pmin
         self.pmax = pmax
         self.scheme = __binning_schemes__[scheme]
+        self.underflow = underflow
+        self.overflow = overflow
 
     def fit(self, X, *args, **kwargs):
         super(GridBinning, self).fit(X)
         if len(X.shape) < 2:
             X = X.reshape(-1, 1)
+        add_bins = 0
+        if not self.underflow:
+            add_bins += 1
+        if not self.overflow:
+            add_bins += 1
         if type(self.bins) == int:
             self.bins = [self.scheme(f,
                                      np.percentile(f, self.pmin),
-                                     np.percentile(f, self.pmax), self.bins)
+                                     np.percentile(f, self.pmax),
+                                     self.bins + add_bins)
                          for f in X.T]
         if type(self.bins[0]) == int:
             self.bins = [self.scheme(np.percentile(f, self.pmin),
-                                     np.percentile(f, self.pmax), n)
+                                     np.percentile(f, self.pmax),
+                                     n + add_bins)
                          for f, n in zip(X.T, self.bins)]
         for i in range(len(self.bins)):
             self.bins[i][-1] += np.finfo("float64").resolution
-        self.n_bins = np.product([len(b) + 1 for b in self.bins])
-        self.bmids = np.array([calc_bmids(b) for b in self.bins])
-        self.bdiff = np.array([calc_bdiff(b) for b in self.bins])
+        self.n_bins = np.product([len(b) + 1 - add_bins for b in self.bins])
+        self.bmids = np.array([calc_bmids(b, self.underflow, self.overflow)
+                               for b in self.bins])
+        self.bdiff = np.array([calc_bdiff(b, self.underflow, self.overflow)
+                               for b in self.bins])
+
 
     def digitize(self, X):
         super(GridBinning, self).digitize(X)
@@ -114,7 +113,8 @@ class GridBinning(Binning):
         B = list(product(*[range(len(self.bins[i]) + 1)
                            for i in range(n_dim)]))
         D = {b: i for i, b in enumerate(B)}
-        c = np.array([np.digitize(X[:, i], self.bins[i])
+        c = np.array([digitize_uni(X[:, i], self.bins[i], self.underflow,
+                                   self.overflow)
                       for i in range(n_dim)]).T
         bin_assoc = [D[tuple(k)] for k in c]
         return np.array(bin_assoc)

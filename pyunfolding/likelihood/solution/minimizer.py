@@ -91,11 +91,14 @@ class Minimizer(SolutionBase):
             jac = result.jac
         except:
             jac = G(result.x)
+        result_dict = {'f': result.x,
+                       'f_err': np.vstack((error, error)),
+                       'success': result.success,
+                       'fun': result.fun,
+                       'jac': jac,
+                       'cov': Hinv}
+
         if not result.success:
+            result_dict['error'] = 'Minimization unsuccessful, residual gradient: {}'.format(np.linalg.norm(jac))
             warn(FailedMinimizationWarning('Minimization not successful.'))
-        return UnfoldingResult(f=result.x,
-                               f_err=np.vstack((error, error)),
-                               success=result.success,
-                               fun=result.fun,
-                               jac=jac,
-                               cov=Hinv)
+        return UnfoldingResult(**result_dict)
