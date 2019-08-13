@@ -14,10 +14,11 @@ class Unfolding(object):
         Binning of the target space.
     """
 
-    def __init__(self, binning_X, binning_y):
+    def __init__(self, binning_X, binning_y, eps=1e-8):
         self.binning_X = binning_X
         self.binning_y = binning_y
         self.fitted = False
+        self.eps = eps
 
     def fit(self, X, y,
             weights=None,
@@ -50,7 +51,7 @@ class Unfolding(object):
         else:
             self.acceptance = acceptance
 
-        self.A = (H + 1e-8) / np.sum(H + 1e-8, axis=0)
+        self.A = (H + self.eps) / np.sum(H + self.eps, axis=0)
         self.fitted = True
 
     def predict(self, f):
