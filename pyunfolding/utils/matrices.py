@@ -27,7 +27,7 @@ def check_symmetry(A, rtol=1e-05, atol=1e-08):
 
 def check_posdef(A, rtol=1e-05, atol=1e-08):
     u, s, v = np.linalg.svd(A)
-    return np.allclose(A, u @ s @ u.T, rtol=rtol, atol=atol)
+    return np.allclose(A, u @ np.diag(s) @ u.T, rtol=rtol, atol=atol)
 
 
 def check_covariance(cov):
