@@ -26,7 +26,10 @@ def check_symmetry(A, rtol=1e-05, atol=1e-08):
 
 
 def check_posdef(A, rtol=1e-05, atol=1e-08):
-    u, s, v = np.linalg.svd(A)
+    try:
+        u, s, v = np.linalg.svd(A)
+    except:
+        return False
     return np.allclose(A, u @ np.diag(s) @ u.T, rtol=rtol, atol=atol)
 
 

@@ -31,10 +31,12 @@ class LLHUnfolding(UnfoldingBase):
         The binning of the observable space. The binning object does not need
         to be fitted prior to initializing this object. In case it is not yet
         fitted, it will be fitted when this object is fitted.
+
     binning_y : ``pyunfolding.binning.Binning`` object
         The binning of the target variable. The binning object does not need
         to be fitted prior to initializing this object. In case it is not yet
         fitted, it will be fitted when this object is fitted.
+
     likelihood : List of ``pyunfolding.likelihood.llh.LikelihoodTerm`` objects
         List of likelihood terms as defined in the `likelihood.llh` submodule.
         The final likelihood used to fit the unfolding estimate is the sum
@@ -44,13 +46,17 @@ class LLHUnfolding(UnfoldingBase):
     ----------
     model : ``pyunfolding.model.Unfolding`` object
         Unfolding model that maps the detection process in some shape or form.
+
     llh : ``pyunfolding.likelihood.llh.Likelihood`` object
         The likelihood object that contains the sum of all involved likelihood
         terms.
+
     is_fitted : `bool`
         Whether the object has already been fitted.
+
     n_bins_X : `int`
         Number of bins in the observable space.
+        
     n_bins_y : `int`
         Number of bins in the target space.
 
