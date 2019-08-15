@@ -19,7 +19,8 @@ if __name__ == '__main__':
     df_test = observables.gen_gaussian_smearing(y, **params)
 
     binning_x = pu.binning.GridBinning(20)
-    binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99)
+    binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99,
+                                       underflow=False, overflow=False)
 
     # Analytical Unfolding.
     # Takes the analytical solution of a regularized, weighted least squares
@@ -30,6 +31,9 @@ if __name__ == '__main__':
     result_ana = ana_unfolding.predict(df_test.X, tau=4e-6)
 
     f_true = ana_unfolding.f(df_test.y)
+
+    print("Result of Analytical Unfolding:")
+    print(result_ana)
 
     result_ana.plot(truth=f_true)
     plt.savefig('analytical_unfolding_result.pdf')
@@ -42,6 +46,8 @@ if __name__ == '__main__':
     svd_unfolding.fit(df_train.X, df_train.y)
     result_svd = svd_unfolding.predict(df_test.X, mode='gaussian', width=3.0)
 
+    print("Result of SVD Unfolding:")
+    print(result_svd)
     result_svd.plot(truth=f_true)
     plt.savefig('svd_unfolding_result.pdf')
 
@@ -55,6 +61,8 @@ if __name__ == '__main__':
     bay_unfolding.fit(df_train.X, df_train.y)
     result_bay = bay_unfolding.predict(df_test.X, n_iterations=10)
 
+    print("Result of Iterative Bayesian Unfolding:")
+    print(result_bay)
     result_bay.plot(truth=f_true)
     plt.savefig('bayesian_unfolding_result.pdf')
 
@@ -66,9 +74,11 @@ if __name__ == '__main__':
     dsea_unfolding = pu.DSEAUnfolding(binning_y)
     dsea_unfolding.fit(df_train.X, df_train.y, RandomForestClassifier)
     result_dsea = dsea_unfolding.predict(df_test.X,
-                                         min_samples_leaf=20,
-                                         n_iterations=20)
+                                         min_samples_leaf=50,
+                                         n_iterations=10)
 
+    print("Result of DSEA Unfolding:")
+    print(result_dsea)
     result_dsea.plot(truth=f_true)
     plt.savefig('dsea_unfolding_result.pdf')
 
@@ -77,11 +87,13 @@ if __name__ == '__main__':
     # Regularization is possible using several options. Among them is a MCMC
     # sampler that actually returns the posterior pdf.
     llh_unfolding = pu.LLHUnfolding(binning_x, binning_y,
-                                likelihood=[pu.likelihood.Poisson(),
-                                            pu.likelihood.Tikhonov(4e-5)])
+                                    likelihood=[pu.likelihood.Poisson(),
+                                                pu.likelihood.Tikhonov(4e-5)])
     llh_unfolding.fit(df_train.X, df_train.y)
     result_llh = llh_unfolding.predict(df_test.X, mcmc=True)
 
+    print("Result of Likelihood Unfolding:")
+    print(result_llh)
     result_llh.plot(truth=f_true)
     plt.savefig('llh_unfolding_result.pdf')
 

@@ -1,8 +1,9 @@
 import numpy as np
+from sklearn.utils import check_X_y, check_array
 
 
 class Unfolding(object):
-    """Linear Model :math:`g = A\cdot f + b`.
+    r"""Linear Model :math:`g = A\cdot f + b`.
 
     Attributes
     ----------
@@ -25,6 +26,11 @@ class Unfolding(object):
             X_background=None,
             weights_background=None,
             acceptance=None):
+        if X.ndim == 1:
+            X = np.array(X).reshape(-1, 1)
+        self.n_dim = X.shape[1]
+        X, y = check_X_y(X, y)
+
         # First digitize all training event using the provided binning schemes.
         if not self.binning_y.fitted:
             self.binning_y.fit(y)
@@ -60,6 +66,9 @@ class Unfolding(object):
         return self.A @ f + self.b
 
     def predict_g(self, X):
+        X = np.array(X)
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
         if not self.fitted:
             raise RuntimeError("Model not fitted! Run fit first!")
         return self.binning_X.histogram(X)

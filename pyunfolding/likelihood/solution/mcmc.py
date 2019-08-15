@@ -155,7 +155,7 @@ class MCMC(SolutionBase):
             if i_burnin > MCMC_BURNIN_NATTEMPTS:
                 warn(FailedMCMCWarning('Maximum number of burn-in attempts exceeded.'))
                 success = False
-                error = 'MCMC Burn-in failed after {} attempts. Final acceptance was {}.'.format(MCMC_BURNIN_NATTEMPTS, acc)
+                error_msg = 'MCMC Burn-in failed after {} attempts. Final acceptance was {}.'.format(MCMC_BURNIN_NATTEMPTS, acc)
                 break
         
         # Calculate multiple separate mcmcs using joblib
@@ -192,7 +192,7 @@ class MCMC(SolutionBase):
         if return_samples:
             result.update(sample=ppdf)
         try:
-            result.update(error=error)
+            result.update(error=error_msg)
         except:
             pass
         if fisher_info:

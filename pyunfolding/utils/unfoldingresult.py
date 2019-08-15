@@ -22,7 +22,7 @@ class UnfoldingResult:
         sym_err = np.allclose(self.f_err[0], self.f_err[1])
         for i, (f, ferr1, ferr2) in enumerate(zip(self.f, self.f_err[0], self.f_err[1])):
             if sym_err:
-                s += u"Var {}:\t{:.2f}±{:.2f}\n".format(i + 1,
+                s += u"Var {}:\t{:.2f} ±{:.2f}\n".format(i + 1,
                                                         f, ferr1)
             else:
                 s += "Var {}:\t{:.2f} +{:.2f} -{:.2f}\n".format(i + 1, f,

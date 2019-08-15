@@ -18,10 +18,25 @@ def _ibu(A, g, f0=None, n_iterations=5, alpha=1.0):
 
 
 class BayesianUnfolding(UnfoldingBase):
-    '''Iterative Bayesian Unfolding, i.e. estimating :math:`\mathbf{f}` by
-    :math:\hat f(j) = \sum_i B(j|i) g(i)`. To shake of the inherent bias of the
-    matrix B, it is estimated iteratively using the last estimation of f for
-    reweighting.
+    r'''Iterative Bayesian Unfolding, i.e. estimating :math:`\mathbf{f}` by
+    .. math::
+        \hat f(j) = \sum_i B(j|i) g(i)
+
+    To shake of the inherent bias of the matrix B, it is estimated iteratively
+    using the last estimation of f for reweighting.
+    Increasing the number of iterations will eventually bring the result
+    closer to what a simple matrix inversion would result in. So limiting
+    the number of iterations will act as a regularization when a flat
+    spectrum is used as a first iteration.
+    To adjust this regularization in a more subtle way, an additional parameter
+    `alpha` is available that enables fractional iterations.
+    The uncertainty is estimating using a very simple numerical gradient, i.e.
+    it is estimated as
+
+    .. math::
+        \mathrm{cov}(\hat{\mathbf{f}}) = \left( \frac{\partial \hat{\mathbf{f}}}{\partial \mathbf{g}}\right ) \cdot \mathrm{diag}(\mathbf{g}) \cdot \left( \frac{\partial \hat{\mathbf{f}}}{\partial \mathbf{g}}\right )^\top
+
+    whereas the gradients are calculated numerically.
 
     Parameters
     ----------
@@ -36,6 +51,10 @@ class BayesianUnfolding(UnfoldingBase):
         Unfolding model.
     is_fitted : bool
         Whether or not the unfolding has been fitted.
+    n_bins_X : `int`
+        Number of bins in the observable space.
+    n_bins_y : `int`
+        Number of bins in the target space.
     '''
     def __init__(self, binning_X, binning_y):
         super(BayesianUnfolding, self).__init__()

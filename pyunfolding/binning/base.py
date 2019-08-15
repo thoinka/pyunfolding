@@ -19,7 +19,6 @@ class Binning(object):
     name : str
         Name of the object.
     """
-    name = "Binning"
 
     def __init__(self, bins, *args, **kwargs):
         self.bins = bins
@@ -91,7 +90,8 @@ class Binning(object):
         if len(X.shape) < 2:
             X = X.reshape(-1, 1)
         cnts = self.digitize(X)
-        H = np.bincount(cnts, weights=weights, minlength=self.n_bins)
+        H = np.bincount(cnts[cnts >= 0], weights=weights,
+                        minlength=self.n_bins)
         if return_xvals:
             xvals = [np.mean(X[cnts == b], axis=0) for b in range(self.n_bins)]
             return H, np.array(xvals)

@@ -63,8 +63,9 @@ class UnfoldingBase:
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
     def predict(self, X, *args, **kwargs):
+        X = np.array(X)
         if X.ndim == 1:
-            X = np.array(X).reshape(-1, 1)
+            X = X.reshape(-1, 1)
 
         if not self.is_fitted:
             raise RuntimeError('Unfolding must be fitted first.')

@@ -1,40 +1,41 @@
 import numpy as np
 from scipy.optimize import minimize
-from ...utils import UnfoldingResult, minimization as mini
+from ...utils import UnfoldingResult
+from ...utils.minimization import *
 from .base import SolutionBase
 from warnings import warn
 from ...exceptions import FailedMinimizationWarning
 
-# List of available scipy optimizers and whether or not they
-# support gradient or hessian information.
-__scipy_minimizer__ = {
-    'nelder-mead':  {'grad': False, 'hess': False},
-    'powell':       {'grad': False, 'hess': False},
-    'cg':           {'grad': True,  'hess': False},
-    'bfgs':         {'grad': True,  'hess': False},
-    'newton-cg':    {'grad': True,  'hess': True },
-    'dogleg':       {'grad': True,  'hess': True },
-    'trust-ncg':    {'grad': True,  'hess': True },
-    'trust-krylov': {'grad': True,  'hess': True },
-    'trust-exact':  {'grad': True,  'hess': True },
-    'l-bfgs-g':     {'grad': True,  'hess': False},
-    'tnc':          {'grad': True,  'hess': False},
-    'cobyla':       {'grad': False, 'hess': False},
-    'slsqp':        {'grad': True,  'hess': False},
-    'trust-constr': {'grad': True,  'hess': True },
-}
-
-# List of available gradient descent optimizers from this module
-__gd_minimizer__ = {
-    'adam':     {'call': mini.adam_minimizer,     'grad': True, 'hess': False},
-    'momentum': {'call': mini.momentum_minimizer, 'grad': True, 'hess': False},
-    'rmsprop':  {'call': mini.rmsprop_minimizer,  'grad': True, 'hess': False},
-    'adadelta': {'call': mini.adadelta_minimizer, 'grad': True, 'hess': False},
-    'newton':   {'call': mini.newton_minimizer,   'grad': True, 'hess': True},
-}
-
 
 class Minimizer(SolutionBase):
+
+    # List of available scipy optimizers and whether or not they
+    # support gradient or hessian information.
+    __scipy_minimizer__ = {
+        'nelder-mead':  {'grad': False, 'hess': False},
+        'powell':       {'grad': False, 'hess': False},
+        'cg':           {'grad': True,  'hess': False},
+        'bfgs':         {'grad': True,  'hess': False},
+        'newton-cg':    {'grad': True,  'hess': True },
+        'dogleg':       {'grad': True,  'hess': True },
+        'trust-ncg':    {'grad': True,  'hess': True },
+        'trust-krylov': {'grad': True,  'hess': True },
+        'trust-exact':  {'grad': True,  'hess': True },
+        'l-bfgs-g':     {'grad': True,  'hess': False},
+        'tnc':          {'grad': True,  'hess': False},
+        'cobyla':       {'grad': False, 'hess': False},
+        'slsqp':        {'grad': True,  'hess': False},
+        'trust-constr': {'grad': True,  'hess': True },
+    }
+
+    # List of available gradient descent optimizers from this module
+    __gd_minimizer__ = {
+        'adam':     {'call': adam_minimizer,     'grad': True, 'hess': False},
+        'momentum': {'call': momentum_minimizer, 'grad': True, 'hess': False},
+        'rmsprop':  {'call': rmsprop_minimizer,  'grad': True, 'hess': False},
+        'adadelta': {'call': adadelta_minimizer, 'grad': True, 'hess': False},
+        'newton':   {'call': newton_minimizer,   'grad': True, 'hess': True },
+    }
 
     def __init__(self, likelihood):
         self.likelihood = likelihood
@@ -46,15 +47,15 @@ class Minimizer(SolutionBase):
         def G(p): return self.likelihood.grad(p, g)
         def H(p): return self.likelihood.hess(p, g)
 
-        is_gd = method.lower() in __gd_minimizer__.keys()
-        is_scipy = method.lower() in __scipy_minimizer__.keys()
+        is_gd = method.lower() in self.__gd_minimizer__.keys()
+        is_scipy = method.lower() in self.__scipy_minimizer__.keys()
 
         if is_gd:  
-            _minimizer = __gd_minimizer__[method.lower()]['call']
+            _minimizer = self.__gd_minimizer__[method.lower()]['call']
             params = {}
-            if __gd_minimizer__[method.lower()]['grad']:
+            if self.__gd_minimizer__[method.lower()]['grad']:
                 params['grad'] = G
-            if __gd_minimizer__[method.lower()]['hess']:
+            if self.__gd_minimizer__[method.lower()]['hess']:
                 params['hess'] = H
             result = _minimizer(F, x0=x0, **params, **kwargs)
             Hinv = np.linalg.pinv(H(result.x))
@@ -64,9 +65,9 @@ class Minimizer(SolutionBase):
             params = {}
             if method is None:
                 method = 'bfgs'
-            if __scipy_minimizer__[method.lower()]['grad']:
+            if self.__scipy_minimizer__[method.lower()]['grad']:
                 params.update(jac=G)
-            if __scipy_minimizer__[method.lower()]['hess']:
+            if self.__scipy_minimizer__[method.lower()]['hess']:
                 params.update(hess=H)
             result = minimize(F, x0=x0, method=method, **params, **kwargs)
             try:

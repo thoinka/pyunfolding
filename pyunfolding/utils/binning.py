@@ -29,7 +29,8 @@ def digitize_uni(x, bins, underflow=True, overflow=True):
     if not underflow:
         selection[idx == 0] = False
         idx -= 1
-    return idx[selection]
+    idx[~selection] = -1
+    return idx#[selection]
 
 def bin_edges(X):
     X_sort = np.sort(X)
@@ -41,18 +42,18 @@ def equidistant_bins(X, Xmin, Xmax, n_bins, **kwargs):
 
 
 def equal_bins(X, Xmin, Xmax, n_bins, **kwargs):
-    bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
-    idx = np.linspace(0, len(bin_edges) - 1, n_bins - 1).astype(int)
-    return bin_edges[idx]
+    edges = bin_edges(X[(X > Xmin) & (X < Xmax)])
+    idx = np.linspace(0, len(edges) - 1, n_bins - 1).astype(int)
+    return edges[idx]
 
 
 def random_bins(X, Xmin, Xmax, n_bins, rnd, **kwargs):
-    rand_edges = np.sort(rnd.uniform(Xmin, Xmax, n_bins - 3))
-    return np.r_[Xmin, rand_edges, Xmax]
+    edges = np.sort(rnd.uniform(Xmin, Xmax, n_bins - 3))
+    return np.r_[Xmin, edges, Xmax]
 
 
 def random_equal_bins(X, Xmin, Xmax, n_bins, rnd, **kwargs):
-    bin_edges = _bin_edges(X[(X > Xmin) & (X < Xmax)])
-    idx = np.sort(rnd.choice(len(bin_edges) - 2, n_bins - 3,
+    edges = bin_edges(X[(X > Xmin) & (X < Xmax)])
+    idx = np.sort(rnd.choice(len(edges) - 2, n_bins - 3,
                                    replace=True) + 1)
-    return np.r_[Xmin, bin_edges[idx], Xmax]
+    return np.r_[Xmin, edges[idx], Xmax]
