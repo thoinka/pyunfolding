@@ -5,7 +5,7 @@ from .tikhonov import Tikhonov
 from .base import LikelihoodTerm, Likelihood
 
 
-__all__ = ("Likelihood",
+__all__ = ["Likelihood",
 	       "LikelihoodTerm",
 	       "Poisson",
            "LeastSquares",
@@ -13,4 +13,4 @@ __all__ = ("Likelihood",
            "OnlyPositive",
            "OnlyConcave",
            "OnlyMonotonic",
-           "Tikhonov")
+           "Tikhonov"]

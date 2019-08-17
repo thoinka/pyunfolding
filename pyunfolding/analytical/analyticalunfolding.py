@@ -1,6 +1,6 @@
 import numpy as np
 from ..model import Unfolding
-from ..utils import diff0_matrix, diff2_matrix, diff1_matrix
+from ..utils import matrices as mat
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
 
@@ -75,11 +75,11 @@ class AnalyticalUnfolding(UnfoldingBase):
         self.n_bins_y = self.model.binning_y.n_bins
         self.n_bins_X = self.model.binning_X.n_bins
         if self.C == "diff1":
-            c_gen = diff1_matrix
+            c_gen = mat.diff1_matrix
         elif self.C == 'diff2':
-            c_gen = diff2_matrix
+            c_gen = mat.diff2_matrix
         elif self.C == 'diff0':
-            self.C = diff0_matrix
+            self.C = mat.diff0_matrix
 
         if self.exclude_edges:
             self.C = np.zeros((self.n_bins_y, self.n_bins_y))

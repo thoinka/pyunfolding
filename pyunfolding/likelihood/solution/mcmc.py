@@ -1,9 +1,9 @@
 import numpy as np
 from collections import namedtuple
 from tqdm import tqdm
-from ...utils import error_central, error_shortest, error_best
+from ...utils.stats import error_central, error_shortest, error_best
 from ...utils import UnfoldingResult
-from ...utils import Posterior
+from ...utils.stats import Posterior
 from .base import SolutionBase
 from joblib import Parallel, delayed
 

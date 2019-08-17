@@ -3,6 +3,12 @@ from warnings import warn
 from ..exceptions import InvalidCovarianceWarning
 
 
+__all__ = ["diff2_matrix",
+           "diff1_matrix",
+           "diff0_matrix",
+           "check_covariance"]
+
+
 def diff2_matrix(n, padding=0):
     n_ = n - 2 * padding
     M = 2.0 * np.eye(n_) - np.roll(np.eye(n_), 1) - np.roll(np.eye(n_), -1)

@@ -1,7 +1,7 @@
-__all__ = ['NotFittedError',
-           'FailedMinimizationWarning',
-           'InvalidCovarianceWarning',
-           'FailedMCMCWarning']
+__all__ = ["NotFittedError",
+           "FailedMinimizationWarning",
+           "InvalidCovarianceWarning",
+           "FailedMCMCWarning"]
 
 
 class NotFittedError(RuntimeError):

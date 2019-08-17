@@ -1,6 +1,6 @@
 import numpy as np
 from .base import LikelihoodTerm
-from ...utils import diff0_matrix, diff1_matrix, diff2_matrix
+from ...utils.matrices import diff0_matrix, diff1_matrix, diff2_matrix
 
 
 class Tikhonov(LikelihoodTerm):

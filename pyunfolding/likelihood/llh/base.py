@@ -1,6 +1,7 @@
 import numpy as np
 from .. import solution
-from ...utils import num_gradient, in_ipython_frontend
+from ...utils import in_ipython_frontend
+from ...utils.minimization import num_gradient
 from IPython.display import Math, display
 
 

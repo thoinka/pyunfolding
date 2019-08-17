@@ -4,6 +4,14 @@ from matplotlib import pyplot as plt
 from collections import namedtuple
 
 
+__all__ = ["newton_minimizer",
+           "num_gradient",
+           "momentum_minimizer",
+           "adam_minimizer",
+           "adadelta_minimizer",
+           "rmsprop_minimizer"]
+
+
 class MinimizationResult:
 
     def __init__(self, x, fun, jac, n_iter, success):
@@ -271,7 +279,7 @@ def adadelta_minimizer(fun,
 
 
 def num_gradient(fun, x0, eps=1e-6):
-    '''Evaluates the gradient of fun at x0 numerically.
+    """Evaluates the gradient of fun at x0 numerically.
 
     Parameters
     ----------
@@ -286,7 +294,7 @@ def num_gradient(fun, x0, eps=1e-6):
     -------
     gradient : numpy.array
         The gradient.
-    '''
+    """
     f0 = fun(x0)
     gradient = np.zeros((len(x0), *f0.shape))
     T = np.tile(x0, (len(x0), 1)) + np.eye(len(x0)) * eps

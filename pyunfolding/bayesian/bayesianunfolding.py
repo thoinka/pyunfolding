@@ -1,7 +1,7 @@
 from ..model import Unfolding
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
-from ..utils import num_gradient
+from ..utils.minimization import num_gradient
 import numpy as np
 
 from numba import jit

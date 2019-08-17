@@ -1,5 +1,5 @@
 import numpy as np
-from .uncertainties import Posterior
+from .stats import Posterior
 from .unfoldingresult import UnfoldingResult
 
 

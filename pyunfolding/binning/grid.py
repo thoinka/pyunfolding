@@ -1,13 +1,7 @@
 import numpy as np
 from itertools import product
 from sklearn.tree import DecisionTreeClassifier
-from ..utils import (calc_bmids,
-                     calc_bdiff,
-                     equidistant_bins,
-                     equal_bins,
-                     random_bins,
-                     random_equal_bins,
-                     digitize_uni)
+from ..utils import binning
 from .base import Binning
 
 import warnings
@@ -70,10 +64,10 @@ class GridBinning(Binning):
         extrapolated (and meaningless).
     """
     __binning_schemes__ = {
-        'equidistant': equidistant_bins,
-        'equal': equal_bins,
-        'random': random_bins,
-        'random-equal': random_equal_bins
+        'equidistant':  binning.equidistant_bins,
+        'equal':        binning.equal_bins,
+        'random':       binning.random_bins,
+        'random-equal': binning.random_equal_bins
     }
 
     def __init__(self,
@@ -146,13 +140,13 @@ class GridBinning(Binning):
         self.n_bins = np.product([len(bins_fitted[i]) + 1 - self._add_bins[i]
                                   for i in range(len(bins_fitted))])
         self.bins = bins_fitted
-        self.bmids = np.array([calc_bmids(self.bins[i],
-                                          self.underflow[i],
-                                          self.overflow[i])
+        self.bmids = np.array([binning.calc_bmids(self.bins[i],
+                                                  self.underflow[i],
+                                                  self.overflow[i])
                                for i in range(len(self.bins))])
-        self.bdiff = np.array([calc_bdiff(self.bins[i],
-                                          self.underflow[i],
-                                          self.overflow[i])
+        self.bdiff = np.array([binning.calc_bdiff(self.bins[i],
+                                                  self.underflow[i],
+                                                  self.overflow[i])
                                for i in range(len(self.bins))])
 
     def digitize(self, X):
@@ -173,10 +167,10 @@ class GridBinning(Binning):
         # effectively flattening digitze.
         D = {b: i for i, b in enumerate(B)}
         # Then each dimension is digitized seperately
-        c = np.array([digitize_uni(X[:, i],
-                                   self.bins[i],
-                                   self.underflow[i],
-                                   self.overflow[i])
+        c = np.array([binning.digitize_uni(X[:, i],
+                                           self.bins[i],
+                                           self.underflow[i],
+                                           self.overflow[i])
                       for i in range(n_dim)]).T
         # Finally, the bin association is determined using the dictionary from
         # before.

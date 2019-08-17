@@ -1,6 +1,16 @@
 import numpy as np
 
 
+__all__ = ["calc_bmids",
+           "calc_bdiff",
+           "digitize_uni",
+           "bin_edges",
+           "equidistant_bins",
+           "equal_bins",
+           "random_bins",
+           "random_equal_bins"]
+
+
 def calc_bmids(bin_edges, underflow=True, overflow=True):
     bmids = (bin_edges[1:] + bin_edges[:-1]) * 0.5
     if underflow:
@@ -30,7 +40,8 @@ def digitize_uni(x, bins, underflow=True, overflow=True):
         selection[idx == 0] = False
         idx -= 1
     idx[~selection] = -1
-    return idx#[selection]
+    return idx
+
 
 def bin_edges(X):
     X_sort = np.sort(X)

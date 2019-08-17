@@ -19,8 +19,7 @@ if __name__ == '__main__':
     df_test = observables.gen_gaussian_smearing(y, **params)
 
     binning_x = pu.binning.GridBinning(20)
-    binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99,
-                                       underflow=False, overflow=False)
+    binning_y = pu.binning.GridBinning(10, pmin=1, pmax=99)
 
     # Analytical Unfolding.
     # Takes the analytical solution of a regularized, weighted least squares

@@ -41,7 +41,7 @@ def plot_unfolding_result(result,
             color = cmap(corr_adj[i] * 0.5 + 0.5)
             ax.fill_between(x[i:i+2], y[i:i+2] - y_err[0,i:i+2],
                             y[i:i+2] + y_err[1,i:i+2],
-                            step='mid', color=color, lw=0)
+                            step='mid', color=color, lw=2, edgecolor='w')
     else:
         ax.fill_between(x[sl], y[sl] - y_err[0,sl], y[sl] + y_err[1,sl], step='mid', color='k', alpha=0.1, lw=0)
     ax.errorbar(x[sl], y[sl], 0.0, 0.5 * dx[sl], ls='', color='k', label='Unfolding result')
