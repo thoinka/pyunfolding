@@ -1,0 +1,7 @@
+Binning
+=======
+
+.. toctree::
+	
+	gridbinning
+	treebinning

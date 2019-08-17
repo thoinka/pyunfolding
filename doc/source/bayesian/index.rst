@@ -1,0 +1,6 @@
+Bayesian Unfolding
+==================
+
+.. toctree::
+
+	bayesian

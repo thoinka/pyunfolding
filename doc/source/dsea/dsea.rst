@@ -1,0 +1,4 @@
+DSEAUnfolding
+=============
+
+.. autoclass:: pyunfolding.DSEAUnfolding

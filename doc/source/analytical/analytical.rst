@@ -1,0 +1,4 @@
+AnalyticalUnfolding
+====================
+
+.. autoclass:: pyunfolding.AnalyticalUnfolding

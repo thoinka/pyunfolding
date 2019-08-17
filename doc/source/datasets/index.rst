@@ -1,0 +1,7 @@
+Datasets
+========
+
+.. toctree::
+
+	observables
+	spectra

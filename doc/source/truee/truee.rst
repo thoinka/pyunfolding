@@ -1,0 +1,4 @@
+TRUEEUnfolding
+==============
+
+.. autoclass:: pyunfolding.TRUEEUnfolding

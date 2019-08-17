@@ -1,0 +1,4 @@
+SVDUnfolding
+============
+
+.. autoclass:: pyunfolding.SVDUnfolding
