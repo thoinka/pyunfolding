@@ -2,6 +2,7 @@ from ..model import Unfolding
 from ..utils import UnfoldingResult
 from ..base import UnfoldingBase
 import numpy as np
+from ..exceptions import NotFittedError
 
 
 def _gaussian_cutoff(x, width):
@@ -53,7 +54,7 @@ class SVDUnfolding(UnfoldingBase):
 
     is_fitted : bool
         Whether or not the unfolding has been fitted.
-        
+        ›
     self.U, self.S, self.V : numpy.arrays
         Matrices that form the singular value decomposition.
     """
@@ -131,4 +132,4 @@ class SVDUnfolding(UnfoldingBase):
                                    cov=cov,
                                    success=True,
                                    binning_y=self.model.binning_y)
-        raise SyntaxError('Unfolding not yet fitted! Use `fit` method first.')
+        raise NotFittedError('Unfolding not yet fitted! Use `fit` method first.')

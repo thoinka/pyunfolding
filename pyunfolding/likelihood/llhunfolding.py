@@ -203,6 +203,12 @@ class LLHUnfolding(UnfoldingBase):
                   * ``median``: Use the median of the samples.
                   * ``best``: Use the best fit among the samples.
                   * ``mean``: Use the mean of the samples.
+
+        Returns
+        -------
+        result : ``pyunfolding.utils.UnfoldingResult`` object
+            The result of the unfolding, see documentation for 
+            `UnfoldingResult`.
         '''
         X = super(LLHUnfolding, self).predict(X)
         if self.is_fitted:

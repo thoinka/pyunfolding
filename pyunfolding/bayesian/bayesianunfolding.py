@@ -4,17 +4,44 @@ from ..base import UnfoldingBase
 from ..utils import num_gradient
 import numpy as np
 
+from numba import jit
 
-def _ibu(A, g, f0=None, n_iterations=5, alpha=1.0):
-    if f0 is None:
-        f_est = [np.ones(A.shape[1]) * np.sum(g) / A.shape[1]]
-    else:
-        f_est = [f0]
+
+@jit("float64[:](float64[:], float64[:], float64[:], int64, float64)",
+    error_model='numpy')
+def _ibu(A, g, f0, n_iterations=5, alpha=1.0):
+    """Iterative Bayesian Unfolding helper function.
+    
+    Parameters
+    ----------
+    A : numpy array, shape=(n_bins_obs, n_bins_tgt)
+        Migration matrix
+
+    g : numpy array, shape=(n_bins_obs,)
+        Observable vector
+
+    n_iterations : int, optional (default=5)
+        Number of iterations. The more, the less regularized the result will
+        be.
+    
+    alpha : float, optional (default=1.0)
+            Step size. Instead of simply using the next proposed iteration as
+            the next step, only a fraction `alpha` of the difference between 
+            the next iteration and the current iteration is added to the
+            current iteration. That slows down convergence and can be useful
+            to determine a more accurate regularization strength.
+    
+    Returns
+    -------
+    f_est : numpy array, shape=(n_bins_tgt)
+        The unfolding result.
+    """
+    f_est = f0
     for _ in range(n_iterations):
-        f_est_new = g @ (A * f_est[-1] / (A @ f_est[-1]).reshape(-1,1))
-        df = f_est_new - f_est[-1]
-        f_est.append(f_est[-1] + alpha * df)
-    return np.array(f_est)[-1]
+        f_est_new = np.dot(g, (A * f_est / (A @ f_est).reshape(-1,1)))
+        df = f_est_new - f_est
+        f_est = f_est + alpha * df
+    return f_est
 
 
 class BayesianUnfolding(UnfoldingBase):
@@ -42,6 +69,7 @@ class BayesianUnfolding(UnfoldingBase):
     ----------
     binning_X : pyunfolding.binning.Binning object
         The binning of the observable space.
+
     binning_y : pyunfolding.binning.Binning object
         The binning of the target variable.
 
@@ -49,10 +77,13 @@ class BayesianUnfolding(UnfoldingBase):
     ----------
     model : pyunfolding.model.Unfolding object
         Unfolding model.
+
     is_fitted : bool
         Whether or not the unfolding has been fitted.
+
     n_bins_X : `int`
         Number of bins in the observable space.
+
     n_bins_y : `int`
         Number of bins in the target space.
     '''
@@ -67,6 +98,7 @@ class BayesianUnfolding(UnfoldingBase):
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
@@ -76,23 +108,49 @@ class BayesianUnfolding(UnfoldingBase):
         self.n_bins_y = self.model.binning_y.n_bins
         self.is_fitted = True
         
-    def predict(self, X, x0=None, n_iterations=5, alpha=1.0, eps=1e-3):
+    def predict(self, X, x0=None, n_iterations=5, alpha=1.0, eps=None):
         '''Calculates an estimate for the unfolding.
+
         Parameters
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+
         x0 : numpy.array, shape=(n_bins_y)
-            Initial value for the unfolding.
-        n_iterations : int
-            Number of iterations.
-        alpha : float
-            Step size, alpha=1.0 means unaltered iterative bayesian unfolding.
-        eps : float
-            Epsilon used for estimating uncertainties.
+            Initial value for the unfolding. This is preferably a very smooth
+            vector to make sure that the regularization works as intended.
+
+        n_iterations : int, optional (default=5)
+            Number of iterations. The more iterations the `less` regularized
+            the result becomes. For the limit of large `n_iterations` the
+            result is equal to :math:`\hat{\mathbf{f}}A^+\mathbf{g}`.
+
+        alpha : float, optional (default=1.0)
+            Step size. Instead of simply using the next proposed iteration as
+            the next step, only a fraction `alpha` of the difference between 
+            the next iteration and the current iteration is added to the
+            current iteration. That slows down convergence and can be useful
+            to determine a more accurate regularization strength.
+
+        eps : float, optional (default=None)
+            Epsilon used for estimating uncertainties. To estimate the errors
+            the derivative :math:`\frac{\partial\mathbf{f}}{\partial\mathbf{g}}´ is calculated using a finite differences approach with
+            stepsize `eps`. If `None`, the value of eps is chosen automatically
+            based on the size of the elements in g.
+
+        Returns
+        -------
+        result : ``pyunfolding.utils.UnfoldingResult`` object
+            The result of the unfolding, see documentation for 
+            `UnfoldingResult`.
         '''
         X = super(BayesianUnfolding, self).predict(X)
-        g = self.g(X)
+        g = self.g(X).astype('float64')
+        if eps is None:
+            g_max = np.max(g)
+            eps = g_max * 1e-6
+        if x0 is None:
+            x0 = np.ones(self.model.A.shape[1]) * np.sum(g) / self.model.A.shape[1]
         ibu_func = lambda g_: _ibu(self.model.A, g_,
                                    f0=x0, n_iterations=n_iterations,
                                    alpha=alpha)

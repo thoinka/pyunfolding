@@ -17,7 +17,8 @@ class Poisson(LikelihoodTerm):
     ----------
     epsilon : `float`, optional (default=1e-8)
         Offset added to :math:`\lambda(f)` in order to avoid numerical problem
-        once it hits very small values. 
+        once it hits very small values.
+
     a, b : `float`, optional (default=1e3)
         Parameters of the additional regularization term. Set `a` to 0 to
         remove the term altogether.
@@ -26,7 +27,8 @@ class Poisson(LikelihoodTerm):
     ----------
     epsilon : `float`, optional (default=1e-8)
         Offset added to :math:`\lambda(f)` in order to avoid numerical problem
-        once it hits very small values. 
+        once it hits very small values.
+        
     a, b : `float`, optional (default=1e3)
         Parameters of the additional regularization term. Set `a` to 0 to
         remove the term altogether.
