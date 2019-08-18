@@ -28,7 +28,7 @@ class SVDUnfolding(UnfoldingBase):
 
     Every coefficient with a value smaller than `sig_level` is then cut off when calculating the pseudo inverse.
     
-    :math:`A^+_\mathrm{reg} = \mathrm{V}^\top \mathrm{S}^+\mathrm{U}^\top \mathrm{diag}(\mathbf{g} > s).
+    :math:`A^+_\mathrm{reg} = \mathrm{V}^\top \mathrm{S}^+\mathrm{U}^\top \mathrm{diag}(\mathbf{g} > s).`
 
     Parameters
     ----------

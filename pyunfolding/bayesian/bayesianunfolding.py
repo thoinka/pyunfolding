@@ -46,6 +46,7 @@ def _ibu(A, g, f0, n_iterations=5, alpha=1.0):
 
 class BayesianUnfolding(UnfoldingBase):
     r'''Iterative Bayesian Unfolding, i.e. estimating :math:`\mathbf{f}` by
+    
     .. math::
         \hat f(j) = \sum_i B(j|i) g(i)
 
@@ -109,7 +110,7 @@ class BayesianUnfolding(UnfoldingBase):
         self.is_fitted = True
         
     def predict(self, X, x0=None, n_iterations=5, alpha=1.0, eps=None):
-        '''Calculates an estimate for the unfolding.
+        r'''Calculates an estimate for the unfolding.
 
         Parameters
         ----------
@@ -134,7 +135,7 @@ class BayesianUnfolding(UnfoldingBase):
 
         eps : float, optional (default=None)
             Epsilon used for estimating uncertainties. To estimate the errors
-            the derivative :math:`\frac{\partial\mathbf{f}}{\partial\mathbf{g}}´ is calculated using a finite differences approach with
+            the derivative :math:`\frac{\partial\mathbf{f}}{\partial\mathbf{g}}` is calculated using a finite differences approach with
             stepsize `eps`. If `None`, the value of eps is chosen automatically
             based on the size of the elements in g.
 

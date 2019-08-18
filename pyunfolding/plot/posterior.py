@@ -29,9 +29,6 @@ def make_colormap(seq):
     return LinearSegmentedColormap('CustomMap', cdict)
 
 
-
-
-
 def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatter=False,
                 color_correlation=True, color='#aaaaaa', colormap='coolwarm'):
     """Corner-style plot
