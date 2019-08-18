@@ -1,4 +1,4 @@
 Posterior
 =========
 
-.. autoclass:: pyunfolding.utils.Posterior
+.. autoclass:: pyunfolding.utils.stats.Posterior

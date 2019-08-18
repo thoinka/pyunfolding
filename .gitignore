@@ -18,3 +18,9 @@ __pycache__
 *.fits
 *.fits.gz
 *.pdf
+
+# docs
+doc/build
+*.html
+*.doctree
+*.inv

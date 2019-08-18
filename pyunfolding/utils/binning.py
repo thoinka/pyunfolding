@@ -12,6 +12,8 @@ __all__ = ["calc_bmids",
 
 
 def calc_bmids(bin_edges, underflow=True, overflow=True):
+    """Calculates the centers of bins from bin edges.
+    """
     bmids = (bin_edges[1:] + bin_edges[:-1]) * 0.5
     if underflow:
     	underflow_bmid = 2 * bin_edges[0] - bin_edges[1]

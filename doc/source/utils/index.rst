@@ -3,12 +3,9 @@ Utilitaries
 
 .. toctree::
 
-	bin_edges
 	bootstrapper
 	calc_bdiff
 	calc_bmids
-	check_posdef
-	check_symmetry
 	cov2corr
 	digitize_uni
 	equal_bins

@@ -72,7 +72,6 @@ def normalized_projection(X, mu, cov):
     return (X - mu) @ isqrtm(cov)
 
 
-
 def mahalanobis(X, mu, cov):
     r"""Calculates the Mahalanobis distance of `X`, given `cov` and `mu` as
     parameters of the underlying multivariate Gaussian distribution.
@@ -99,7 +98,6 @@ def mahalanobis(X, mu, cov):
     n = X.shape[1]
     icov = np.linalg.pinv(cov)
     return (X_cent.reshape(-1,1,n) @ icov @ X_cent.reshape(-1,n,1)).flatten()
-
 
 
 def gaussian_pvalue(X, mu, cov, ndof=None):
@@ -139,3 +137,39 @@ def gaussian_pvalue(X, mu, cov, ndof=None):
     if ndof is None:
         ndof = X.shape[1]
     return chi2(ndof).cdf(dsquared)
+
+
+def mutual_information(cov, exclude_edges=False):
+    r"""Calculates the mutual information from a given covariance under the
+    assumption that it describes a multivariate Gaussian distribution. In this
+    case the mutual information is given by
+
+    .. math::
+        \mahtrm{MI} = \log \frac{\mathrm{det} \Sigma_1}{\mathrm{det} \Sigma_0}
+
+    where :math`\Sigma_1` is the covariance and :math:`\Sigma_0` the covariance
+    with only the diagonal elments non-zero.
+
+    Parameters
+    ----------
+    cov : numpy array
+        The covariance matrix, needs to be square and positive semi-definite.
+        _Note_: This is not checked!
+
+    exclude_edges : bool
+        Whether to exclude the edges. Sometimes, especially when over- and
+        underflow bins are used, the covariance matrix gets very close to
+        singular and the calculation of the determinent faces numerical
+        problems. In this case it's advisable to exclude the edges from
+        the calculation
+
+    Returns
+    -------
+    mutual_info : numpy array
+        The mutual information.
+    """
+    if exclude_edges:
+        cov = cov[1:-1, 1:-1]
+    a = np.sum(np.log(np.linalg.svd(cov)[1]))
+    b = np.sum(np.log(cov.diagonal()))
+    return a - b

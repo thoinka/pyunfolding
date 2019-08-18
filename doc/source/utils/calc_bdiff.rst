@@ -1,4 +1,4 @@
 calc_bdiff
 ==========
 
-.. autofunction:: pyunfolding.utils.calc_bdiff
+.. autofunction:: pyunfolding.utils.binning.calc_bdiff

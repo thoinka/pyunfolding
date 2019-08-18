@@ -1,4 +1,4 @@
 error_shortest
 ==============
 
-.. autofunction:: pyunfolding.utils.error_shortest
+.. autofunction:: pyunfolding.utils.stats.error_shortest

@@ -12,4 +12,5 @@ __all__ = ["error_central",
            "isqrtm_semipos",
            "normalized_projection",
            "mahalanobis",
-           "gaussian_pvalue"]
+           "gaussian_pvalue",
+           "mutual_information"]

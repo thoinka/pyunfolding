@@ -1,4 +1,4 @@
 digitize_uni
 ============
 
-.. autofunction:: pyunfolding.utils.digitize_uni
+.. autofunction:: pyunfolding.utils.binning.digitize_uni
