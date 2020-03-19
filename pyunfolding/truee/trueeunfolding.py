@@ -35,13 +35,17 @@ class TRUEEUnfolding(UnfoldingBase):
     ----------
     is_fitted : bool
         Whether or not the unfolding has been fitted.
+    
     TRUEE_CALL : str
         location of truee binaray (or alias)
+    
     TRUEE_RESULT : str
         Name of result file. I guess it's always TrueeResultFile.root, but just
         in case.
+    
     binning_X : pyunfolding.binning.Binning object
         The binning of the observable space.
+    
     binning_y : pyunfolding.binning.Binning object
         The binning of the target variable.
     '''
@@ -82,6 +86,7 @@ class TRUEEUnfolding(UnfoldingBase):
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
@@ -130,31 +135,46 @@ class TRUEEUnfolding(UnfoldingBase):
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+       
         n_knots : int
             Number of knots for the spline representation used in TRUEE.
             Rule of thumb: Should be about twice the number of bins in the
             target variable space.
+       
         n_dof : int
             Number of degrees of freedom, the more, the less regularized the
             unfolding.
+       
         data_luminosity : float
             I guess weights for X?
+        
         moca_luminosity : float
             I guess weights for y?
+        
         fx_positive : bool
             Whether to enforce positive results for the unfolded spectrum.
+        
         smooth_x : bool
             Whether to smooth ... the observable vector? I don't know.
+        
         zero_left, zero_right : bool
             I think supposedly, this is supposed to set the left/right-most bin
             to zero. However, I don't think it does anything at all
+        
         constraints : str
             A string containing a C-style formula (without spaces!). No idea.
+        
         weight_first : int
             Who knows
+        
         cleanup : bool
             Whether or not to delete all temporary files after TRUEE was called.
 
+        Returns
+        -------
+        result : ``pyunfolding.utils.UnfoldingResult`` object
+            The result of the unfolding, see documentation for 
+            `UnfoldingResult`.
         '''
         if not self.is_fitted:
             raise RuntimeError('Unfolding not yet fitted. Use `fit` routine first.')

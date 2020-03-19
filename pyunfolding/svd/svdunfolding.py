@@ -22,13 +22,15 @@ class SVDUnfolding(UnfoldingBase):
 
     :math:`\mathbf{g} = \mathrm{A}\mathbf{f} = \mathrm{U}\mathrm{S}\mathrm{V}\mathbf{f}`
 
-    The pseudoinverse of :math:`A` is then regularized by cutting off statistically insignficant coefficients of :math:`\mathbf{g}`. The statistical significance of each coefficient is determined by assuming Poissonian statistics:
+    In this representation of the unfolding equation, the bad condition of the
+    problem becomes obvious in the form of small values that inflate
+    statistically insignificant components of the obsrvable vector when
+    inverted.
 
-    :math:`\Sigma_{\mathbf{g}} = `U^\top \mathrm{diag}(\mahtbf{g}) U`
-
-    Every coefficient with a value smaller than `sig_level` is then cut off when calculating the pseudo inverse.
-    
-    :math:`A^+_\mathrm{reg} = \mathrm{V}^\top \mathrm{S}^+\mathrm{U}^\top \mathrm{diag}(\mathbf{g} > s).`
+    The pseudoinverse of :math:`A` is then regularized by supressing
+    statistically insignficant coefficients of :math:`\mathbf{g}`. There
+    are various envelope functions to apply to the coefficients of the
+    decomposition available.
 
     Parameters
     ----------
@@ -77,6 +79,7 @@ class SVDUnfolding(UnfoldingBase):
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
@@ -100,14 +103,22 @@ class SVDUnfolding(UnfoldingBase):
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         mode : str
             Shape used to cut off the singular value. Possible values:
+            
             * `gaussian`: Gaussian with mean 0 and spread `width`
             * `exponential`: Exponential with decay length `width`
             * `sigmoid`: Sigmoid function with location `loc` and steepness `width`.
+        
         kwargs : dict
             Keywords required by mode.
 
+        Returns
+        -------
+        result : ``pyunfolding.utils.UnfoldingResult`` object
+            The result of the unfolding, see documentation for 
+            `UnfoldingResult`.
         '''
         X = super(SVDUnfolding, self).predict(X)
         if self.is_fitted:

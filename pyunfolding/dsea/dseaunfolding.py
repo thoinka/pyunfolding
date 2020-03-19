@@ -23,14 +23,19 @@ class DSEAUnfolding(UnfoldingBase):
     ----------
     is_fitted : bool
         Whether or not the unfolding has been fitted.
+    
     binning_y : pyunfolding.binning.Binning object
         The binning of the target space.
+    
     X_train : numpy.array, shape=(n_samples, n_observables)
         Training data: Observables
+    
     y_train : numpy.array, shape=(n_samples,)
         Training data: Target variable
+    
     labels : numpy.array, shape=(n_labels,)
         All labels contained in training data.
+    
     classifier : sklearn.classifier
         An sklearn classifier
     """
@@ -50,6 +55,7 @@ class DSEAUnfolding(UnfoldingBase):
         ----------
         y : numpy.array, shape=(n_samples,)
             Target variable sample.
+        
         weights : numpy.array, shape=(n_samples,)
             Weights corresponding to the sample.
 
@@ -71,8 +77,10 @@ class DSEAUnfolding(UnfoldingBase):
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
+        
         classifier : sklearn.classifier
             An sklearn classifier 
         '''
@@ -95,15 +103,25 @@ class DSEAUnfolding(UnfoldingBase):
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         n_iterations : int, default=1
             Number of iterations to be performed.
+        
         alpha : float, default=1.0
             Decay rate, i.e. in order to force the algorithm to convergence
             the weights are only partially updated.
+        
         plus : bool, default=True
             Whether or not to use partial weight updating.
+        
         kwargs : dict
             Keywords for the classifier.
+
+        Returns
+        -------
+        result : ``pyunfolding.utils.UnfoldingResult`` object
+            The result of the unfolding, see documentation for 
+            `UnfoldingResult`.
         '''
         X = super(DSEAUnfolding, self).predict(X)
 

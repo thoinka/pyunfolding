@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
-from matplotlib.cm import get_cmap
+from matplotlib.cm import get_cmap, ScalarMappable
+from matplotlib.colors import Normalize
 import numpy as np
 
 
@@ -41,12 +42,15 @@ def plot_unfolding_result(result,
             color = cmap(corr_adj[i] * 0.5 + 0.5)
             ax.fill_between(x[i:i+2], y[i:i+2] - y_err[0,i:i+2],
                             y[i:i+2] + y_err[1,i:i+2],
-                            step='mid', facecolor=color, lw=2, edgecolor='w')
+                            step='mid', facecolor=color, lw=2,
+                            edgecolor=plt.rcParams['axes.facecolor'])
     else:
         ax.fill_between(x[sl], y[sl] - y_err[0,sl], y[sl] + y_err[1,sl], step='mid', color='k', alpha=0.1, lw=0)
-    ax.errorbar(x[sl], y[sl], 0.0, 0.5 * dx[sl], ls='', color='k', label='Unfolding result')
+    ax.errorbar(x[sl], y[sl], 0.0, 0.5 * dx[sl], ls='', lw=2,
+                color=plt.rcParams['lines.color'], label='Unfolding result')
     if truth is not None:
-        ax.plot(x[sl], truth[sl], drawstyle='steps-mid', label='Truth', color='k', alpha=0.5)
+        ax.plot(x[sl], truth[sl], drawstyle='steps-mid', label='Truth',
+                color=plt.rcParams['lines.color'], alpha=0.5)
     if target_var:
         ax.set_xlabel('Target Variable $y$')
     else:

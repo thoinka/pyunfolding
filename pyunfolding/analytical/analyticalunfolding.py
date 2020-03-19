@@ -20,20 +20,30 @@ def _analytical_solution(A, g, tau, Sigma, C_matrix):
 
 
 class AnalyticalUnfolding(UnfoldingBase):
-    '''Analytical solution to the unfolding problem in the case of a Weighted
-    Least Squares Likelihood with Tikhonov regularization.
+    r'''Analytical solution to the unfolding problem in the case of a Weighted
+    Least Squares Likelihood with Tikhonov regularization:
+
+    .. math::
+        -\log\mathcal{L} = (\mathbf{g} - \mathrm{A}\mathbf{f})^\top (\mathbf{g} - \mathrm{A}\mathbf{f}) + \frac{\tau}{2}\mathbf{f}^\top\mathrm{C}^\top \mathrm{C} \mathbf{f}
+
+    It turns out, the minimum of this function can be found by analytical
+    means.
 
     Parameters
     ----------
     binning_X : pyunfolding.binning.Binning object
         The binning of the observable space.
+
     binning_y : pyunfolding.binning.Binning object
         The binning of the target variable.
+
     exclude_edges : bool
         Whether or not to exclude the edges, i.e. the under- and overflow bin
         in the regularization.
+
     C : string or numpy.array
         Regularization matrix
+    
     Sigma : None, string or numpy.array
         Weight matrix.
     
@@ -41,12 +51,16 @@ class AnalyticalUnfolding(UnfoldingBase):
     ----------
     model : pyunfolding.model.Unfolding object
         Unfolding model.
+    
     llh : pyunfolding.likelihood.llh.Likelihood object
         The likelihood.
+    
     is_fitted : bool
         Whether the object has already been fitted.
+    
     n_bins_X : int
         Number of bins in the observable space.
+    
     n_bins_y : int
         Number of bins in the target space.
     '''
@@ -65,6 +79,7 @@ class AnalyticalUnfolding(UnfoldingBase):
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+        
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
         '''
@@ -88,13 +103,14 @@ class AnalyticalUnfolding(UnfoldingBase):
             self.C = c_gen(self.n_bins_y)
         
     def predict(self, X, tau=0.0, **kwargs):
-        '''Calculates an estimate for the unfolding by maximizing the likelihood
-        function (or minimizing the log-likelihood).
+        '''Calculates an estimate for the unfolding by maximizing the
+        likelihood function (or minimizing the log-likelihood).
 
         Parameters
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+
         tau : float
             Regularization strength.
         '''

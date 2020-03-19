@@ -79,7 +79,7 @@ class GridBinning(Binning):
                  overflow=True,
                  random_seed=None):
         super(GridBinning, self).__init__(bins)
-        if type(bins) is int:
+        if type(bins) == int:
             self.bins = [bins]
         if not hasattr(pmin, '__getitem__'):
             self.pmin = pmin * np.ones(len(self.bins))

@@ -11,6 +11,7 @@ class Bootstrapper:
     ----------
     unfolding : pu.UnfoldingBase object
         The unfolding object.
+
     n_boostraps : int
         Number of bootstraps.
 
@@ -18,6 +19,7 @@ class Bootstrapper:
     ----------
     unfolding : pu.UnfoldingBase object
         The unfolding object.
+
     n_boostraps : int
         Number of bootstraps.
     '''
@@ -28,13 +30,14 @@ class Bootstrapper:
         self.is_fitted = False
 
     def g(self, X, weights=None):
-        '''Returns an observable vector :math:`\mathbf{g}` given a sample
+        r'''Returns an observable vector :math:`\mathbf{g}` given a sample
         of observables `X`.
 
         Parameters
         ----------
         X : numpy.array, shape=(n_samples, n_observables)
             Observable sample.
+
         weights : numpy.array, shape=(n_samples,)
             Weights corresponding to the sample.
 
@@ -48,13 +51,14 @@ class Bootstrapper:
         raise RuntimeError('Unfolding not yet fitted! Use `fit` method first.')
 
     def f(self, y, weights=None):
-        '''Returns a result vector :math:`\mathbf{f}` given a sample
+        r'''Returns a result vector :math:`\mathbf{f}` given a sample
         of target variable values `y`.
 
         Parameters
         ----------
         y : numpy.array, shape=(n_samples,)
             Target variable sample.
+
         weights : numpy.array, shape=(n_samples,)
             Weights corresponding to the sample.
 
@@ -74,8 +78,10 @@ class Bootstrapper:
         ----------
         X_train : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+
         y_train : numpy.array, shape=(n_samples,)
             Target variable sample.
+
         kwargs : dict
             Additional keywords for the fit routine.
         '''
@@ -94,10 +100,13 @@ class Bootstrapper:
         ----------
         X : numpy.array, shape=(n_samples, n_obervables)
             Observable sample.
+
         error_method : str
             Method used to estimate the uncertainty region of each bin.
+
         value_method : str
             Method used to estimate the best fit value for each bin.
+
         return_sample : bool
             Whether or not to return the full bootstrapped sample.
         '''

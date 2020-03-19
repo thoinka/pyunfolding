@@ -49,18 +49,25 @@ def newton_minimizer(fun,
     ----------
     fun : function
         Function to be minimized.
+    
     grad : function
         Jacobian of the fun.
+    
     hess : function
         Hessian of the function.
+    
     x0 : float or numpy.array
         Start values
+    
     max_iter : int, optional
         Maximum number of iterations.
+    
     tol : float
         Relative tolerance.
+    
     alpha : float
         Regularization factor.
+    
     lr : float
         Learning rate.
     """
@@ -95,16 +102,22 @@ def momentum_minimizer(fun,
     ----------
     fun : function
         Function to be minimized.
+
     grad : function
         Jacobian of the fun.
+
     x0 : float or numpy.array
         Start values
+
     max_iter : int, optional
         Maximum number of iterations.
+
     tol : float
         Relative tolerance.
+    
     alpha : float
         Momentum coefficient.
+    
     lr : float
         Learning rate.
 
@@ -143,18 +156,25 @@ def rmsprop_minimizer(fun,
     ----------
     fun : function
         Function to be minimized.
+    
     grad : function
         Jacobian of the fun.
+    
     x0 : float or numpy.array
         Start values
+    
     max_iter : int, optional
         Maximum number of iterations.
+    
     tol : float
         Relative tolerance.
+    
     gamma : float
         Forgetting factor.
+    
     mu : float
         Additional momentum.
+    
     lr : float
         Learning rate.
 
@@ -195,16 +215,22 @@ def adam_minimizer(fun,
     ----------
     fun : function
         Function to be minimized.
+    
     grad : function or None
         Jacobian of the fun. If None, Jacobian is evaluated numerically.
+    
     x0 : float or numpy.array
         Start values
+    
     tol : float
         Relative tolerance.
+    
     beta1 : float
         First forgetting factor.
+    
     beta2 : float
         Second forgetting factor.
+    
     lr : float
         Learning rate.
 
@@ -245,12 +271,16 @@ def adadelta_minimizer(fun,
     ----------
     fun : function
         Function to be minimized.
+    
     grad : function or None
         Jacobian of the fun. If None, Jacobian is evaluated numerically.
+    
     x0 : float or numpy.array
         Start values
+    
     tol : float
         Relative tolerance.
+    
     gamma : float
         Forgetting factor.
 
@@ -285,8 +315,10 @@ def num_gradient(fun, x0, eps=1e-6):
     ----------
     fun : function
         Function to evaluate the gradient for.
+    
     x0 : numpy.array
         Point at which to evaluate the gradient for.
+    
     eps : float
         step size.
 

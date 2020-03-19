@@ -15,6 +15,7 @@ class Posterior:
     ----------
     X : numpy.array, shape=(n_samples, n_dim)
         Posterior sample.
+
     F : numpy.array, shape=(n_samples,)
         Function values of posterior sample if available.
     
@@ -22,6 +23,7 @@ class Posterior:
     ----------
     X : numpy.array, shape=(n_samples, n_dim)
         Posterior sample.
+
     F : numpy.array, shape=(n_samples,)
         Function values of posterior sample if available.
     '''
@@ -43,6 +45,7 @@ class Posterior:
         ----------
         method : str
             Method used to calculate uncertainty regions. Either
+            
             * `central`: Central interval, i.e. (1-p) / 2 and (1+p) / 2
                          quantiles.
             * `feldman-cousins`: Feldman-cousins interval. _Note_: Requires
@@ -51,8 +54,10 @@ class Posterior:
             * `best`: Interval of best function values _Note_: Requires
                       function values.
             * `std`: Simply the standard deviation.
+
         best_fit : numpy.array, shape=(n_dim,)
             Best fit in the sample. Required by method `feldman-cousins`.
+
         p : float, default=0.68...
             Quantile covered by ncertainty interval
 
@@ -82,8 +87,50 @@ class Posterior:
                              .format(error_method))
         return lower, upper
     
-    def plot(self, **kwargs):
-        return corner_plot(self.X, **kwargs)
+    def plot(self, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None,
+                scatter=False, color_correlation=True, color='#aaaaaa',
+                colormap='coolwarm', **kwargs):
+        '''Plot all marginal and two-dimensional common distributions of the
+        sample contained in this object.
+
+        Parameters
+        ----------
+        n_bins : int, optional (default=20)
+            Number of bins for the two-dimensional histogrmas
+
+        hist2d_kw : dict, optional
+            Keywords for the `pyplot.hist2d` method.
+
+        kde : bool, optional (default=False)
+            Whether to smooth out the two-dimensional marginal distributions
+            using a kernel density estimations (this is usually very, very
+            slow).
+
+        best_fit : numpy.array, optional (default=None)
+            Best fit, will be contained in the plot with a dashed line, if
+            provided.
+
+        scatter : bool, optional (default=False)
+            Whether or not to add scatter points.
+
+        color_correlation : bool, optional (default=False)
+            Whether to encode the correlation of each two-dimensional marginal
+            distribution in the color of the density map
+
+        color : str, optional (default='#aaaaaa')
+            Color of the one-dimensional marginal distributions (or the rest
+            of the plot in case `color_correlation` is `False`)
+
+        colormap : str. optional (default='coolwarm')
+            Colormap used for the correlation coloring.
+
+        Returns
+        -------
+        matplotlib.pyplot.axis object
+        '''
+        return corner_plot(self.X, n_bins, hist2d_kw, kde, best_fit,
+                           scatter, color_correlation, color,
+                           colormap, **kwargs)
 
     def value(self, method='median'):
         '''Calculates value from given sample.
@@ -92,6 +139,7 @@ class Posterior:
         ----------
         method : str
             Method used to calculate values. Either
+            
             * `median`: 50% quantile
             * `best`: value corresponding to the best function value. __Note__:
                       Requires function values.

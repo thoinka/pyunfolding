@@ -4,6 +4,39 @@ from .matrices import check_covariance
 
 
 class UnfoldingResult:
+    '''Class to contain the result of an unfolding.
+
+    Parameters
+    ----------
+    f : numpy.array, shape=(n_bins_y)
+        Unfolding result
+
+    f_err : numpy.array, shape=(2, n_bins_y)
+        Uncertainty estimate, potentially asymmetrical
+
+    success : bool
+        Whether the unfolding was deemed successful or not.
+
+    kwargs : dict
+        Additional keys for the result object.
+
+    Attributes
+    ----------
+    f : numpy.array, shape=(n_bins_y)
+        Unfolding result
+
+    f_err : numpy.array, shape=(2, n_bins_y)
+        Uncertainty estimate, potentially asymmetrical
+
+    success : bool
+        Whether the unfolding was deemed successful or not.
+
+    Raises
+    ------
+    InvalidCovarianceWarning
+        Raised when the covariance matrix is improper.
+    '''
+
     def __init__(self, f, f_err, success, *args, **kwargs):
         self.f = f
         self.f_err = f_err
@@ -33,8 +66,36 @@ class UnfoldingResult:
             s += "No error message was left."
         return s
 
-    def plot(self, *args, **kwargs):
-        return plot_unfolding_result(self, *args, **kwargs)
+    def plot(self,
+             ax=None,
+             truth=None,
+             exclude_edges=True,
+             correlations=True,
+             *args,
+             **kwargs):
+        """Plots this unfolding result.
+        
+        Parameters
+        ----------
+        ax : matplotlib.pyplot.axis, optional (default=None)
+            Matplotlib axis. If None provided, one is created.
+
+        truth : numpy.array or None, optional (default=None)
+            Baseline truth if provided, otherwise None.
+
+        exclude_edges : bool, optional (default=True)
+            Whether to leave out the edges.
+
+        correlations : bool, optional (default=True)
+            Whether to encode the bin-to-bin correlations.
+        
+        Returns
+        -------
+        matplotlib.pyplot.axis
+            Axis containing plot.
+        """
+        return plot_unfolding_result(self, ax, truth, exclude_edges,
+                                     correlations, *args, **kwargs)
 
     def __repr__(self):
         return self.__str__()

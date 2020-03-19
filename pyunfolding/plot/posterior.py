@@ -3,7 +3,8 @@ from matplotlib.colors import LogNorm, LinearSegmentedColormap
 import numpy as np
 from itertools import product
 from scipy.interpolate import interp1d
-from matplotlib.cm import get_cmap
+from matplotlib.cm import get_cmap, ScalarMappable
+from matplotlib.colors import Normalize
 from scipy.stats import gaussian_kde
 
 
@@ -29,8 +30,9 @@ def make_colormap(seq):
     return LinearSegmentedColormap('CustomMap', cdict)
 
 
-def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None, scatter=False,
-                color_correlation=True, color='#aaaaaa', colormap='coolwarm'):
+def corner_plot(X, n_bins=20, hist2d_kw=dict(), kde=False, best_fit=None,
+                scatter=False, color_correlation=True, color='#aaaaaa',
+                colormap='coolwarm'):
     """Corner-style plot
     """
     cmap_colors = ["#ffffff", color]

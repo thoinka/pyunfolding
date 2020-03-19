@@ -43,7 +43,7 @@ def gen_gaussian(loc, scale, n_samples):
         Samples.
     '''
     a, b = -loc / scale, (1.0 - loc) / scale
-    return dist.truncnorm.rvs(a=a, b=b, loc=loc, scale=scale)
+    return dist.truncnorm.rvs(a=a, b=b, loc=loc, scale=scale, size=n_samples)
 
 
 def gen_powerlaw(alpha, beta, gamma, n_samples):
